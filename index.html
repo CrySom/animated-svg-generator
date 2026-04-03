@@ -361,6 +361,32 @@ const state = { bg: null, syms: [], activeSymIdx: 0, customParticle: null };
 // Global effects (bg, flash overlay, particles, vignette)
 const fx = { bg_ken:false, bg_dim:true, flash_on:true, part_on:true, vig_on:true, vig_pulse:false };
 
+// WebP support detection
+let supportsWebP = false;
+(function detectWebP() {
+  const canvas = document.createElement('canvas');
+  canvas.width = 1; canvas.height = 1;
+  supportsWebP = canvas.toDataURL('image/webp').indexOf('data:image/webp') === 0;
+})();
+
+// Convert image to optimal format via Canvas
+// Elements (need transparency) → WebP or PNG
+// Background (no transparency needed) → WebP or JPEG
+function optimizeImage(img, needsAlpha) {
+  const canvas = document.createElement('canvas');
+  canvas.width = img.naturalWidth;
+  canvas.height = img.naturalHeight;
+  const ctx = canvas.getContext('2d');
+  ctx.drawImage(img, 0, 0);
+  if (supportsWebP) {
+    return { data: canvas.toDataURL('image/webp', 0.85), type: 'image/webp' };
+  } else if (!needsAlpha) {
+    return { data: canvas.toDataURL('image/jpeg', 0.85), type: 'image/jpeg' };
+  } else {
+    return { data: canvas.toDataURL('image/png'), type: 'image/png' };
+  }
+}
+
 // Per-element animation defaults
 function defaultSymAnim() {
   return {
@@ -419,7 +445,8 @@ function loadCustomParticle(input) {
   reader.onload = e => {
     const img = new Image();
     img.onload = () => {
-      state.customParticle = { data: e.target.result, type: file.type, name: file.name, w: img.naturalWidth, h: img.naturalHeight };
+      const opt = optimizeImage(img, true);
+      state.customParticle = { data: opt.data, type: opt.type, name: file.name, w: img.naturalWidth, h: img.naturalHeight };
       const preview = document.getElementById('customPartPreview');
       const thumb = document.getElementById('customPartThumb');
       const nameEl = document.getElementById('customPartName');
@@ -427,9 +454,10 @@ function loadCustomParticle(input) {
       const uploadZone = document.getElementById('customPartUploadZone');
       if (preview) preview.style.display = 'flex';
       if (uploadZone) uploadZone.style.display = 'none';
-      if (thumb) thumb.src = e.target.result;
+      if (thumb) thumb.src = opt.data;
       if (nameEl) nameEl.textContent = file.name;
-      if (dimsEl) dimsEl.textContent = img.naturalWidth + 'x' + img.naturalHeight + 'px';
+      const fmt = opt.type.split('/')[1].toUpperCase();
+      if (dimsEl) dimsEl.textContent = img.naturalWidth + 'x' + img.naturalHeight + 'px · ' + fmt;
       rebuild();
     };
     img.src = e.target.result;
@@ -554,10 +582,14 @@ function loadBg(input) {
   r.onload = e => {
     const img = new Image();
     img.onload = () => {
-      state.bg = { data: e.target.result, type: file.type, w: img.naturalWidth, h: img.naturalHeight };
+      const opt = optimizeImage(img, false);
+      const origSize = Math.round(e.target.result.length * 3/4 / 1024);
+      const newSize = Math.round(opt.data.length * 3/4 / 1024);
+      state.bg = { data: opt.data, type: opt.type, w: img.naturalWidth, h: img.naturalHeight };
       const zone = document.getElementById('bgZone');
       zone.classList.add('has-file');
-      document.getElementById('bgLabel').innerHTML = '<img style="width:28px;height:28px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px" src="' + e.target.result + '"> ' + file.name;
+      const fmt = opt.type.split('/')[1].toUpperCase();
+      document.getElementById('bgLabel').innerHTML = '<img style="width:28px;height:28px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px" src="' + opt.data + '"> ' + file.name + ' <small style="color:#4a7a4a;display:block;margin-top:2px">' + fmt + ' · ' + newSize + 'KB (was ' + origSize + 'KB)</small>';
       rebuild();
     };
     img.src = e.target.result;
@@ -584,7 +616,8 @@ function loadSymFile(idx, input) {
   r.onload = e => {
     const img = new Image();
     img.onload = () => {
-      state.syms[idx] = { data: e.target.result, type: file.type, name: file.name, w: img.naturalWidth, h: img.naturalHeight };
+      const opt = optimizeImage(img, true);
+      state.syms[idx] = { data: opt.data, type: opt.type, name: file.name, w: img.naturalWidth, h: img.naturalHeight };
       renderSymSlots();
       setActiveSymIdx(idx);
       rebuild();
