@@ -254,6 +254,23 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
     <input type="color" value="#ffdd44" id="partColor" onchange="rebuild()" style="width:100%;height:26px;background:#18181c;border:1px solid #252528;border-radius:4px;cursor:pointer;margin-top:2px">
     <label>Size <span id="partSzVal">4</span>px</label>
     <input type="range" min="2" max="14" value="4" id="partSize" oninput="sv('partSzVal',this.value);rebuild()">
+    <label style="margin-top:10px">Motion</label>
+    <select id="partMotion" onchange="rebuild()">
+      <option value="float">Float — gentle drift up</option>
+      <option value="rain">Rain — fall from top</option>
+      <option value="rise">Rise — bubbles up</option>
+      <option value="burst">Burst — explode from center</option>
+      <option value="orbit">Orbit — circle around</option>
+      <option value="cascade">Cascade — diagonal fall</option>
+      <option value="shimmer">Shimmer — pulse in place</option>
+    </select>
+    <label>Speed</label>
+    <select id="partSpeed" onchange="rebuild()">
+      <option value="0.5">Slow</option>
+      <option value="1" selected>Normal</option>
+      <option value="1.8">Fast</option>
+      <option value="3">Very fast</option>
+    </select>
     <label style="margin-top:10px">Shape</label>
     <div style="display:flex;gap:4px;margin-top:4px;margin-bottom:8px">
       <div id="ptab_preset" onclick="setPartTab('preset')"
@@ -787,6 +804,8 @@ function getP() {
     partColor: document.getElementById('partColor').value,
     partSize: parseInt(document.getElementById('partSize').value),
     partStyle: currentPartStyle,
+    partMotion: document.getElementById('partMotion').value,
+    partSpeed: parseFloat(document.getElementById('partSpeed').value),
     customPartTint: document.getElementById('customPartTint') && document.getElementById('customPartTint').checked,
     vigInt: document.getElementById('vigInt').value/100,
     vigColor: document.getElementById('vigColor').value,
@@ -920,16 +939,109 @@ function buildSVG() {
   let partEl = '';
   if (fx.part_on) {
     partEl = '<g id="'+uid+'_parts">';
+    const cx0 = size/2, cy0 = size/2;
     for (let i = 0; i < p.partCount; i++) {
       const seed = i * 137.508;
-      const px = ((Math.sin(seed)*0.5+0.5)*size*0.85 + size*0.075).toFixed(1);
-      const py = ((Math.cos(seed*0.7)*0.5+0.5)*size*0.85 + size*0.075).toFixed(1);
       const r2 = p.partSize;
-      const d = (parseFloat(dur) * (0.8 + (i%4)*0.15)).toFixed(0);
-      const delay = (-(i*400)).toFixed(0);
       const rgb = hexRgb(p.partColor);
-      const tx = (parseFloat(px)+(i%2?10:-10)).toFixed(1);
-      const ty = (parseFloat(py)-15).toFixed(1);
+      const speedMul = p.partSpeed || 1;
+
+      // — Motion-dependent position & trajectory —
+      let px, py, animStr, opacStr;
+      const baseDur = parseFloat(dur);
+
+      if (p.partMotion === 'rain') {
+        // Rain: spawn across top, fall to bottom with horizontal sway
+        px = (size * 0.05 + (i / p.partCount) * size * 0.9 + Math.sin(seed) * size * 0.08).toFixed(1);
+        py = (-r2 * 3).toFixed(1);
+        const endY = (size + r2 * 3).toFixed(1);
+        const swayX = (parseFloat(px) + Math.sin(seed * 2.3) * size * 0.08).toFixed(1);
+        const midY = (size * 0.5 + Math.sin(seed) * size * 0.15).toFixed(1);
+        const d = (baseDur * (0.7 + (i % 5) * 0.12) / speedMul).toFixed(0);
+        const delay = (-(i * baseDur * 0.15)).toFixed(0);
+        animStr = '<animateTransform attributeName="transform" type="translate" values="'+px+','+py+';'+swayX+','+midY+';'+px+','+endY+'" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite" additive="replace"/>';
+        opacStr = '<animate attributeName="opacity" values="0;0.9;0.85;0.3" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite"/>';
+
+      } else if (p.partMotion === 'rise') {
+        // Rise: spawn across bottom, float upward with wobble
+        px = (size * 0.05 + (i / p.partCount) * size * 0.9 + Math.sin(seed) * size * 0.06).toFixed(1);
+        py = (size + r2 * 3).toFixed(1);
+        const endY = (-r2 * 3).toFixed(1);
+        const swayX = (parseFloat(px) + Math.sin(seed * 1.7) * size * 0.1).toFixed(1);
+        const midY = (size * 0.45 + Math.cos(seed) * size * 0.12).toFixed(1);
+        const d = (baseDur * (0.8 + (i % 4) * 0.12) / speedMul).toFixed(0);
+        const delay = (-(i * baseDur * 0.14)).toFixed(0);
+        animStr = '<animateTransform attributeName="transform" type="translate" values="'+px+','+py+';'+swayX+','+midY+';'+px+','+endY+'" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite" additive="replace"/>';
+        opacStr = '<animate attributeName="opacity" values="0;0.85;0.9;0" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite"/>';
+
+      } else if (p.partMotion === 'burst') {
+        // Burst: all start from center, explode outward in all directions
+        px = cx0.toFixed(1);
+        py = cy0.toFixed(1);
+        const angle = (Math.PI * 2 / p.partCount) * i + seed * 0.01;
+        const dist = size * 0.42 + Math.sin(seed) * size * 0.08;
+        const ex = (cx0 + Math.cos(angle) * dist).toFixed(1);
+        const ey = (cy0 + Math.sin(angle) * dist).toFixed(1);
+        const mx = (cx0 + Math.cos(angle) * dist * 0.55).toFixed(1);
+        const my = (cy0 + Math.sin(angle) * dist * 0.55).toFixed(1);
+        const d = (baseDur * (0.7 + (i % 3) * 0.15) / speedMul).toFixed(0);
+        const delay = (-(i * 200)).toFixed(0);
+        animStr = '<animateTransform attributeName="transform" type="translate" values="'+px+','+py+';'+mx+','+my+';'+ex+','+ey+';'+px+','+py+'" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite" additive="replace"/>';
+        opacStr = '<animate attributeName="opacity" values="0;1;0.7;0" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite"/>';
+
+      } else if (p.partMotion === 'orbit') {
+        // Orbit: particles circle around the center at different radii
+        const orbitR = size * 0.2 + (i % 4) * size * 0.06 + Math.sin(seed) * size * 0.04;
+        const steps = 8;
+        let vals = [];
+        for (let s = 0; s <= steps; s++) {
+          const a = (Math.PI * 2 / steps) * s + (Math.PI * 2 / p.partCount) * i;
+          vals.push((cx0 + Math.cos(a) * orbitR).toFixed(1) + ',' + (cy0 + Math.sin(a) * orbitR).toFixed(1));
+        }
+        px = vals[0].split(',')[0];
+        py = vals[0].split(',')[1];
+        const d = (baseDur * (1.2 + (i % 3) * 0.2) / speedMul).toFixed(0);
+        const delay = (-(i * baseDur * 0.12)).toFixed(0);
+        animStr = '<animateTransform attributeName="transform" type="translate" values="'+vals.join(';')+'" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite" additive="replace"/>';
+        opacStr = '<animate attributeName="opacity" values="0.5;0.9;0.7;0.9;0.5" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite"/>';
+
+      } else if (p.partMotion === 'cascade') {
+        // Cascade: diagonal fall from top-left to bottom-right with stagger
+        const startX = (-r2 * 2 + Math.sin(seed) * size * 0.15).toFixed(1);
+        const startY = (-r2 * 2 + (i / p.partCount) * size * 0.3).toFixed(1);
+        px = startX; py = startY;
+        const endX = (size + r2 * 2).toFixed(1);
+        const endY = (size * 0.6 + (i / p.partCount) * size * 0.4 + r2 * 2).toFixed(1);
+        const midX = (size * 0.45 + Math.sin(seed * 1.3) * size * 0.1).toFixed(1);
+        const midY = (size * 0.35 + Math.cos(seed) * size * 0.1).toFixed(1);
+        const d = (baseDur * (0.8 + (i % 4) * 0.12) / speedMul).toFixed(0);
+        const delay = (-(i * baseDur * 0.13)).toFixed(0);
+        animStr = '<animateTransform attributeName="transform" type="translate" values="'+startX+','+startY+';'+midX+','+midY+';'+endX+','+endY+'" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite" additive="replace"/>';
+        opacStr = '<animate attributeName="opacity" values="0;0.9;0.8;0.2" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite"/>';
+
+      } else if (p.partMotion === 'shimmer') {
+        // Shimmer: stay distributed, scale-pulse and opacity-pulse in place
+        px = ((Math.sin(seed)*0.5+0.5)*size*0.85 + size*0.075).toFixed(1);
+        py = ((Math.cos(seed*0.7)*0.5+0.5)*size*0.85 + size*0.075).toFixed(1);
+        const jx = (parseFloat(px) + Math.sin(seed * 3) * 2).toFixed(1);
+        const jy = (parseFloat(py) + Math.cos(seed * 2.5) * 2).toFixed(1);
+        const d = (baseDur * (0.6 + (i % 5) * 0.15) / speedMul).toFixed(0);
+        const delay = (-(i * baseDur * 0.18)).toFixed(0);
+        animStr = '<animateTransform attributeName="transform" type="translate" values="'+px+','+py+';'+jx+','+jy+';'+px+','+py+'" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite" additive="replace"/>';
+        opacStr = '<animate attributeName="opacity" values="0.2;1;0.3;0.9;0.2" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite"/>';
+
+      } else {
+        // Float (default): gentle upward drift
+        px = ((Math.sin(seed)*0.5+0.5)*size*0.85 + size*0.075).toFixed(1);
+        py = ((Math.cos(seed*0.7)*0.5+0.5)*size*0.85 + size*0.075).toFixed(1);
+        const tx = (parseFloat(px)+(i%2?10:-10)).toFixed(1);
+        const ty = (parseFloat(py)-15).toFixed(1);
+        const d = (baseDur * (0.8 + (i%4)*0.15) / speedMul).toFixed(0);
+        const delay = (-(i*400)).toFixed(0);
+        animStr = '<animateTransform attributeName="transform" type="translate" values="'+px+','+py+';'+tx+','+ty+';'+px+','+py+'" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite" additive="replace"/>';
+        opacStr = '<animate attributeName="opacity" values="0;1;0.6;0" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite"/>';
+      }
+
       let shape;
       if (p.partStyle === 'custom' && state.customParticle) {
         const cp = state.customParticle;
@@ -975,10 +1087,7 @@ function buildSVG() {
       } else {
         shape = '<circle cx="0" cy="0" r="'+r2+'" fill="rgba('+rgb+',0.85)"/>';
       }
-      partEl += '<g transform="translate('+px+','+py+')">'+shape+
-        '<animateTransform attributeName="transform" type="translate" values="'+px+','+py+';'+tx+','+ty+';'+px+','+py+'" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite" additive="replace"/>' +
-        '<animate attributeName="opacity" values="0;1;0.6;0" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite"/>' +
-      '</g>\n';
+      partEl += '<g transform="translate('+px+','+py+')">'+shape+animStr+opacStr+'</g>\n';
     }
     partEl += '</g>';
   }
