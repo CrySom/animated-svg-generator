@@ -42,6 +42,9 @@ hr { border: none; border-top: 1px solid #1a1a1e; margin: 10px 0; }
 
 label { display: block; font-size: 9px; color: #444; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 4px; margin-top: 10px; }
 label span { color: #666; }
+label span.editable-val { cursor: pointer; border-bottom: 1px dashed #333; padding: 0 2px; transition: all 0.15s; }
+label span.editable-val:hover { color: #5aaa5a; border-color: #4a7a4a; }
+.inline-edit { background: #18181c; border: 1px solid #2a5a2a; color: #5aaa5a; padding: 1px 4px; border-radius: 3px; font-size: 9px; font-family: inherit; width: 48px; outline: none; text-align: center; }
 input[type=range] { width: 100%; accent-color: #4a7a4a; }
 select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aaa; padding: 6px 8px; border-radius: 4px; font-size: 10px; font-family: inherit; }
 
@@ -373,6 +376,80 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
 const state = { bg: null, syms: [], activeSymIdx: 0, customParticle: null };
 // Global effects (bg, flash overlay, particles, vignette)
 const fx = { bg_ken:false, bg_dim:true, flash_on:true, part_on:true, vig_on:true, vig_pulse:false };
+
+// Editable value spans — click to type
+const valMap = {
+  symXVal:       { slider:'symX',          min:0,   max:100,  div:1,   after:function(){ saveSymFx(); } },
+  symYVal:       { slider:'symY',          min:0,   max:100,  div:1,   after:function(){ saveSymFx(); } },
+  symSizeVal:    { slider:'symSize',       min:10,  max:200,  div:1,   after:function(){ saveSymFx(); } },
+  scaleVal:      { slider:'scalePeak',     min:100, max:160,  div:0.01, after:function(){ saveSymFx(); } },
+  flashVal:      { slider:'flashBrightness',min:110,max:400,  div:1,   after:function(){ saveSymFx(); } },
+  glowSzVal:     { slider:'glowSize',      min:2,   max:30,  div:1,   after:function(){ saveSymFx(); } },
+  entrDurVal:    { slider:'entrDur',       min:100, max:2000, div:1,   after:function(){ saveSymFx(); } },
+  entrPauseVal:  { slider:'entrPause',     min:0,   max:1000, div:1,   after:function(){ saveSymFx(); } },
+  spinDurVal:    { slider:'spinDur',       min:300, max:8000, div:1,   after:function(){ saveSymFx(); } },
+  flashOpVal:    { slider:'flashOpacity',  min:5,   max:90,   div:0.01 },
+  partCntVal:    { slider:'partCount',     min:2,   max:20,   div:1   },
+  partSzVal:     { slider:'partSize',      min:2,   max:14,   div:1   },
+  vigIntVal:     { slider:'vigInt',        min:10,  max:95,   div:0.01 },
+  durVal:        { slider:'duration',      min:400, max:6000, div:1   },
+};
+
+function initEditableVals() {
+  Object.keys(valMap).forEach(function(spanId) {
+    var spans = document.querySelectorAll('#' + spanId);
+    spans.forEach(function(span) {
+      span.classList.add('editable-val');
+      span.addEventListener('click', function(e) {
+        e.stopPropagation();
+        startInlineEdit(span, spanId);
+      });
+    });
+  });
+}
+
+function startInlineEdit(span, spanId) {
+  if (span.querySelector('.inline-edit')) return;
+  var cfg = valMap[spanId];
+  var curText = span.textContent;
+  var input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'inline-edit';
+  input.value = curText;
+  span.textContent = '';
+  span.appendChild(input);
+  input.focus();
+  input.select();
+
+  function apply() {
+    var raw = parseFloat(input.value);
+    if (isNaN(raw)) { span.textContent = curText; rebuild(); return; }
+    var sliderVal;
+    if (cfg.div === 0.01) {
+      sliderVal = Math.round(raw * 100);
+    } else if (cfg.div === 1) {
+      sliderVal = Math.round(raw);
+    } else {
+      sliderVal = Math.round(raw / cfg.div);
+    }
+    sliderVal = Math.max(cfg.min, Math.min(cfg.max, sliderVal));
+    var slider = document.getElementById(cfg.slider);
+    if (slider) slider.value = sliderVal;
+    if (cfg.div === 0.01) {
+      span.textContent = (sliderVal / 100).toFixed(2);
+    } else {
+      span.textContent = sliderVal;
+    }
+    if (cfg.after) cfg.after();
+    rebuild();
+  }
+
+  input.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') { e.preventDefault(); apply(); }
+    if (e.key === 'Escape') { span.textContent = curText; }
+  });
+  input.addEventListener('blur', apply);
+}
 
 // WebP support detection
 let supportsWebP = false;
@@ -963,6 +1040,7 @@ function exportPNG() {
 
 // Init
 addSymSlot();
+initEditableVals();
 </script>
 </body>
 </html>
