@@ -179,6 +179,8 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
     <input type="range" min="0" max="100" value="50" id="symY">
     <label>Scale <span id="symSizeVal">100</span>%</label>
     <input type="range" min="10" max="200" value="100" id="symSize">
+    <label>Opacity <span id="symOpacityVal">100</span>%</label>
+    <input type="range" min="0" max="100" value="100" id="symOpacity" oninput="sv('symOpacityVal',this.value);saveSymFx();rebuild()">
     <div style="font-size:9px;color:#333;margin-top:4px" id="symNaturalDims">natural: —</div>
 
     <!-- ── EFFECTS ── -->
@@ -682,8 +684,9 @@ function defaultSymAnim() {
     rotate: false,
     // shine glint
     shine: false, shineDur: 800, shineWidth: 0.15, shineOpacity: 0.6, shineAngle: 25,
-    // blend mode
+    // blend mode & opacity
     blendMode: 'normal',
+    opacity: 100,
     // entrance
     entranceType: 'none', entrDur: 600, entrPause: 200,
     // loops
@@ -803,8 +806,9 @@ function saveSymFx() {
   sp.shineWidth = parseFloat(document.getElementById('shineWidth').value);
   sp.shineOpacity = parseInt(document.getElementById('shineOpacity').value) / 100;
   sp.shineAngle = parseInt(document.getElementById('shineAngle').value);
-  // blend
+  // blend & opacity
   sp.blendMode = document.getElementById('symBlendMode').value;
+  sp.opacity = parseInt(document.getElementById('symOpacity').value);
 }
 
 // Load sym params into UI controls
@@ -864,8 +868,10 @@ function loadSymUI() {
   sv('shineOpVal', sp.shineOpacity.toFixed(2));
   document.getElementById('shineAngle').value = sp.shineAngle;
 
-  // blend mode
+  // blend mode & opacity
   document.getElementById('symBlendMode').value = sp.blendMode || 'normal';
+  document.getElementById('symOpacity').value = sp.opacity != null ? sp.opacity : 100;
+  sv('symOpacityVal', sp.opacity != null ? sp.opacity : 100);
 }
 
 function setTog(id, val) {
@@ -1221,6 +1227,11 @@ function buildSVG() {
     // BLEND MODE — wrap in group with mix-blend-mode
     if (sp.blendMode && sp.blendMode !== 'normal') {
       inner = '<g style="mix-blend-mode:'+sp.blendMode+'">'+inner+'</g>';
+    }
+
+    // OPACITY
+    if (sp.opacity != null && sp.opacity < 100) {
+      inner = '<g opacity="'+(sp.opacity / 100).toFixed(2)+'">'+inner+'</g>';
     }
 
     symElMap['sym_'+i] = inner + '\n';
