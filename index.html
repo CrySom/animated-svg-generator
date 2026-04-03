@@ -761,12 +761,12 @@ function buildSVG() {
     if (sp.flash) {
       symCSS += '#'+sid+'_fl{animation:'+sid+'_fl '+dur+'ms linear infinite;}' +
       '@keyframes '+sid+'_fl{0%{filter:brightness(100%);}33%{filter:brightness(100%);}50%{filter:brightness('+sp.flashBrightness+'%);}72%{filter:brightness(115%);}100%{filter:brightness(100%);}}\n';
-      inner = '<g id="'+sid+'_fl" transform="translate(-'+cx.toFixed(1)+',-'+cy.toFixed(1)+')">'+inner+'</g>';
+      inner = '<g id="'+sid+'_fl">'+inner+'</g>';
     }
     if (sp.scale) {
       const scaleVal = (sp.scalePeak/100).toFixed(3);
-      symCSS += '#'+sid+'_ts{animation:'+sid+'_ts '+dur+'ms '+easing+' infinite;}' +
-      '@keyframes '+sid+'_ts{0%{transform:translate('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px) scale(1,1);}27%{transform:translate('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px) scale('+scaleVal+','+scaleVal+');}33%{transform:translate('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px) scale(1,1);}100%{transform:translate('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px) scale(1,1);}}\n';
+      symCSS += '#'+sid+'_ts{animation:'+sid+'_ts '+dur+'ms '+easing+' infinite;transform-origin:'+cx.toFixed(1)+'px '+cy.toFixed(1)+'px;}' +
+      '@keyframes '+sid+'_ts{0%{transform:scale(1);}27%{transform:scale('+scaleVal+');}33%{transform:scale(1);}100%{transform:scale(1);}}\n';
       inner = '<g id="'+sid+'_ts">'+inner+'</g>';
     }
 
