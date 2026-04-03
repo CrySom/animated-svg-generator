@@ -271,6 +271,10 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
       <option value="1.8">Fast</option>
       <option value="3">Very fast</option>
     </select>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:10px;padding:7px 0;border-top:1px solid #1a1a1e">
+      <input type="checkbox" id="partSpin3d" onchange="rebuild()" style="accent-color:#4a7a4a;width:14px;height:14px;flex-shrink:0">
+      <span style="font-size:9px;color:#555;text-transform:uppercase;letter-spacing:0.1em">3D Spin <small style="color:#333;text-transform:none">(coin flip effect)</small></span>
+    </div>
     <label style="margin-top:10px">Shape</label>
     <div style="display:flex;gap:4px;margin-top:4px;margin-bottom:8px">
       <div id="ptab_preset" onclick="setPartTab('preset')"
@@ -806,6 +810,7 @@ function getP() {
     partStyle: currentPartStyle,
     partMotion: document.getElementById('partMotion').value,
     partSpeed: parseFloat(document.getElementById('partSpeed').value),
+    partSpin3d: document.getElementById('partSpin3d').checked,
     customPartTint: document.getElementById('customPartTint') && document.getElementById('customPartTint').checked,
     vigInt: document.getElementById('vigInt').value/100,
     vigColor: document.getElementById('vigColor').value,
@@ -1086,6 +1091,12 @@ function buildSVG() {
         shape = '<circle cx="0" cy="'+(-cl*1.0).toFixed(2)+'" r="'+cl.toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><circle cx="'+(cl*1.0).toFixed(2)+'" cy="0" r="'+cl.toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><circle cx="0" cy="'+(cl*1.0).toFixed(2)+'" r="'+cl.toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><circle cx="'+(-cl*1.0).toFixed(2)+'" cy="0" r="'+cl.toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><circle cx="0" cy="0" r="'+(cl*0.55).toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><rect x="'+(-cl*0.22).toFixed(2)+'" y="'+(cl*0.8).toFixed(2)+'" width="'+(cl*0.44).toFixed(2)+'" height="'+(cl*0.9).toFixed(2)+'" fill="rgba('+rgb+',0.85)"/>';
       } else {
         shape = '<circle cx="0" cy="0" r="'+r2+'" fill="rgba('+rgb+',0.85)"/>';
+      }
+      // 3D spin wrapper — coin flip illusion via scaleX animation, staggered per particle
+      if (p.partSpin3d) {
+        const spinDur = ((400 + (i % 5) * 140) / speedMul).toFixed(0);
+        const spinDelay = (-(i * 190 + Math.abs(Math.sin(seed) * 300))).toFixed(0);
+        shape = '<g><animateTransform attributeName="transform" type="scale" values="1 1;0.06 1;1 1;0.06 1;1 1" dur="'+spinDur+'ms" begin="'+spinDelay+'ms" repeatCount="indefinite"/>' + shape + '</g>';
       }
       partEl += '<g transform="translate('+px+','+py+')">'+shape+animStr+opacStr+'</g>\n';
     }
