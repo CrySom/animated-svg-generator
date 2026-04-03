@@ -155,6 +155,24 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
   <div id="panel_sym" class="fx-panel">
     <div id="activeSymName" style="font-size:9px;color:#4a7a4a;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e1e22">— select an element —</div>
 
+    <!-- ── SETTINGS ── -->
+    <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#3a3a44;margin-bottom:8px;margin-top:2px">Settings</div>
+    <label>Blend mode</label>
+    <select id="symBlendMode" onchange="saveSymFx();rebuild()">
+      <option value="normal">Normal</option>
+      <option value="multiply">Multiply</option>
+      <option value="screen">Screen</option>
+      <option value="overlay">Overlay</option>
+      <option value="darken">Darken</option>
+      <option value="lighten">Lighten</option>
+      <option value="color-dodge">Color Dodge</option>
+      <option value="color-burn">Color Burn</option>
+      <option value="hard-light">Hard Light</option>
+      <option value="soft-light">Soft Light</option>
+      <option value="difference">Difference</option>
+      <option value="exclusion">Exclusion</option>
+      <option value="luminosity">Luminosity</option>
+    </select>
     <label>X position <span id="symXVal">50</span>%</label>
     <input type="range" min="0" max="100" value="50" id="symX">
     <label>Y position <span id="symYVal">50</span>%</label>
@@ -162,7 +180,9 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
     <label>Scale <span id="symSizeVal">100</span>%</label>
     <input type="range" min="10" max="200" value="100" id="symSize">
     <div style="font-size:9px;color:#333;margin-top:4px" id="symNaturalDims">natural: —</div>
-    <hr>
+
+    <!-- ── EFFECTS ── -->
+    <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#3a3a44;margin-bottom:8px;margin-top:12px;padding-top:8px;border-top:1px solid #1e1e22">Effects</div>
 
     <!-- SCALE BOUNCE -->
     <div class="effect-row"><div class="tog on" id="tog_sym_scale" onclick="toggleSymFx('scale')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></span> Scale bounce<small>pulse in size</small></div></div>
@@ -189,10 +209,35 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
 
     <!-- ROTATION WOBBLE -->
     <div class="effect-row"><div class="tog" id="tog_sym_rotate" onclick="toggleSymFx('rotate')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span> Rotation wobble<small>±4deg oscillation</small></div></div>
-    <hr>
 
-    <!-- ENTRANCE / LOOP -->
-    <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#3a3a44;margin-bottom:8px;margin-top:2px">Entrance / Loop</div>
+    <!-- SHINE / GLINT -->
+    <div class="effect-row"><div class="tog" id="tog_sym_shine" onclick="toggleSymFx('shine')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="6"/><line x1="6" y1="18" x2="12" y2="6"/></svg></span> Shine glint<small>light streak sweep</small></div></div>
+    <div id="c_sym_shine" style="display:none">
+      <label>Speed</label>
+      <select id="shineDur" onchange="saveSymFx();rebuild()">
+        <option value="1200">Slow</option>
+        <option value="800" selected>Normal</option>
+        <option value="500">Fast</option>
+      </select>
+      <label>Width</label>
+      <select id="shineWidth" onchange="saveSymFx();rebuild()">
+        <option value="0.08">Thin</option>
+        <option value="0.15" selected>Normal</option>
+        <option value="0.25">Wide</option>
+      </select>
+      <label>Opacity <span id="shineOpVal">0.6</span></label>
+      <input type="range" min="20" max="100" value="60" id="shineOpacity" oninput="sv('shineOpVal',(this.value/100).toFixed(2));saveSymFx();rebuild()">
+      <label>Angle</label>
+      <select id="shineAngle" onchange="saveSymFx();rebuild()">
+        <option value="25" selected>25° diagonal</option>
+        <option value="45">45° diagonal</option>
+        <option value="0">0° vertical</option>
+        <option value="90">90° horizontal</option>
+      </select>
+    </div>
+
+    <!-- ── ENTRANCE / LOOP ── -->
+    <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#3a3a44;margin-bottom:8px;margin-top:12px;padding-top:8px;border-top:1px solid #1e1e22">Entrance / Loop</div>
     <label>Entrance type</label>
     <select id="entranceType" onchange="saveSymFx();rebuild()">
       <option value="none">None</option>
@@ -229,52 +274,6 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
       <option value="ease-out">Ease Out</option>
       <option value="linear">Linear</option>
       <option value="cubic-bezier(0.34,1.56,0.64,1)">Spring</option>
-    </select>
-    <hr>
-
-    <!-- SHINE / GLINT -->
-    <div class="effect-row"><div class="tog" id="tog_sym_shine" onclick="toggleSymFx('shine')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="6"/><line x1="6" y1="18" x2="12" y2="6"/></svg></span> Shine glint<small>light streak sweep</small></div></div>
-    <div id="c_sym_shine" style="display:none">
-      <label>Speed</label>
-      <select id="shineDur" onchange="saveSymFx();rebuild()">
-        <option value="1200">Slow</option>
-        <option value="800" selected>Normal</option>
-        <option value="500">Fast</option>
-      </select>
-      <label>Width</label>
-      <select id="shineWidth" onchange="saveSymFx();rebuild()">
-        <option value="0.08">Thin</option>
-        <option value="0.15" selected>Normal</option>
-        <option value="0.25">Wide</option>
-      </select>
-      <label>Opacity <span id="shineOpVal">0.6</span></label>
-      <input type="range" min="20" max="100" value="60" id="shineOpacity" oninput="sv('shineOpVal',(this.value/100).toFixed(2));saveSymFx();rebuild()">
-      <label>Angle</label>
-      <select id="shineAngle" onchange="saveSymFx();rebuild()">
-        <option value="25" selected>25° diagonal</option>
-        <option value="45">45° diagonal</option>
-        <option value="0">0° vertical</option>
-        <option value="90">90° horizontal</option>
-      </select>
-    </div>
-    <hr>
-
-    <!-- BLEND MODE -->
-    <label>Blend mode</label>
-    <select id="symBlendMode" onchange="saveSymFx();rebuild()">
-      <option value="normal">Normal</option>
-      <option value="multiply">Multiply</option>
-      <option value="screen">Screen</option>
-      <option value="overlay">Overlay</option>
-      <option value="darken">Darken</option>
-      <option value="lighten">Lighten</option>
-      <option value="color-dodge">Color Dodge</option>
-      <option value="color-burn">Color Burn</option>
-      <option value="hard-light">Hard Light</option>
-      <option value="soft-light">Soft Light</option>
-      <option value="difference">Difference</option>
-      <option value="exclusion">Exclusion</option>
-      <option value="luminosity">Luminosity</option>
     </select>
   </div>
 
@@ -893,18 +892,29 @@ function selectLayer(name) {
 
 function loadBg(input) {
   const file = input.files[0]; if(!file) return;
+  const isGif = file.type === 'image/gif';
   const r = new FileReader();
   r.onload = e => {
     const img = new Image();
     img.onload = () => {
-      const opt = optimizeImage(img, false);
-      const origSize = Math.round(e.target.result.length * 3/4 / 1024);
-      const newSize = Math.round(opt.data.length * 3/4 / 1024);
-      state.bg = { data: opt.data, type: opt.type, w: img.naturalWidth, h: img.naturalHeight };
+      let data, type, fmt, origSize, newSize;
+      origSize = Math.round(e.target.result.length * 3/4 / 1024);
+      if (isGif) {
+        data = e.target.result;
+        type = 'image/gif';
+        fmt = 'GIF';
+        newSize = origSize;
+      } else {
+        const opt = optimizeImage(img, false);
+        data = opt.data;
+        type = opt.type;
+        fmt = type.split('/')[1].toUpperCase();
+        newSize = Math.round(data.length * 3/4 / 1024);
+      }
+      state.bg = { data, type, w: img.naturalWidth, h: img.naturalHeight, isGif };
       const zone = document.getElementById('bgZone');
       zone.classList.add('has-file');
-      const fmt = opt.type.split('/')[1].toUpperCase();
-      document.getElementById('bgLabel').innerHTML = '<img style="width:28px;height:28px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px" src="' + opt.data + '"> ' + file.name + ' <small style="color:#4a7a4a;display:block;margin-top:2px">' + fmt + ' · ' + newSize + 'KB (was ' + origSize + 'KB)</small>';
+      document.getElementById('bgLabel').innerHTML = '<img style="width:28px;height:28px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px" src="' + data + '"> ' + file.name + ' <small style="color:#4a7a4a;display:block;margin-top:2px">' + fmt + ' · ' + newSize + 'KB' + (isGif ? '' : ' (was ' + origSize + 'KB)') + '</small>';
       rebuild();
     };
     img.src = e.target.result;
@@ -928,12 +938,22 @@ function addSymSlot(data) {
 
 function loadSymFile(idx, input) {
   const file = input.files[0]; if(!file) return;
+  const isGif = file.type === 'image/gif';
   const r = new FileReader();
   r.onload = e => {
     const img = new Image();
     img.onload = () => {
-      const opt = optimizeImage(img, true);
-      state.syms[idx] = { data: opt.data, type: opt.type, name: file.name, w: img.naturalWidth, h: img.naturalHeight };
+      let data, type;
+      if (isGif) {
+        // Keep original GIF data — canvas would kill animation
+        data = e.target.result;
+        type = 'image/gif';
+      } else {
+        const opt = optimizeImage(img, true);
+        data = opt.data;
+        type = opt.type;
+      }
+      state.syms[idx] = { data, type, name: file.name, w: img.naturalWidth, h: img.naturalHeight, isGif };
       renderSymSlots();
       renderLayerList();
       setActiveSymIdx(idx);
@@ -1059,9 +1079,14 @@ function buildSVG() {
   const { size, dur } = p;
   const uid = 'g' + Math.random().toString(36).slice(2,8);
 
-  const bgEl = state.bg
-    ? '<image width="'+size+'" height="'+size+'" xlink:href="'+state.bg.data+'" preserveAspectRatio="xMidYMid slice"/>'
-    : '<rect width="'+size+'" height="'+size+'" fill="#1a1a2e"/>';
+  let bgEl;
+  if (!state.bg) {
+    bgEl = '<rect width="'+size+'" height="'+size+'" fill="#1a1a2e"/>';
+  } else if (state.bg.isGif) {
+    bgEl = '<foreignObject width="'+size+'" height="'+size+'"><img xmlns="http://www.w3.org/1999/xhtml" src="'+state.bg.data+'" style="width:'+size+'px;height:'+size+'px;object-fit:cover"/></foreignObject>';
+  } else {
+    bgEl = '<image width="'+size+'" height="'+size+'" xlink:href="'+state.bg.data+'" preserveAspectRatio="xMidYMid slice"/>';
+  }
 
   let symElMap = {};  // sym_0: '...', sym_1: '...'
   let symCSS = '';
@@ -1085,9 +1110,18 @@ function buildSVG() {
       filterAttr = 'filter="url(#'+sid+'_glow)"';
     }
 
-    let inner = '<image width="'+r.dw.toFixed(1)+'" height="'+r.dh.toFixed(1)+'"' +
-      ' xlink:href="'+sym.data+'" preserveAspectRatio="xMidYMid meet"' +
-      ' transform="translate('+r.x.toFixed(1)+' '+r.y.toFixed(1)+')" '+filterAttr+'/>';
+    let inner;
+    if (sym.isGif) {
+      inner = '<foreignObject width="'+r.dw.toFixed(1)+'" height="'+r.dh.toFixed(1)+'"' +
+        ' transform="translate('+r.x.toFixed(1)+' '+r.y.toFixed(1)+')" '+filterAttr+'>' +
+        '<img xmlns="http://www.w3.org/1999/xhtml" src="'+sym.data+'"' +
+        ' style="width:'+r.dw.toFixed(1)+'px;height:'+r.dh.toFixed(1)+'px;object-fit:contain;pointer-events:none"/>' +
+        '</foreignObject>';
+    } else {
+      inner = '<image width="'+r.dw.toFixed(1)+'" height="'+r.dh.toFixed(1)+'"' +
+        ' xlink:href="'+sym.data+'" preserveAspectRatio="xMidYMid meet"' +
+        ' transform="translate('+r.x.toFixed(1)+' '+r.y.toFixed(1)+')" '+filterAttr+'/>';
+    }
 
     if (sp.rotate) {
       symCSS += '#'+sid+'_rot{animation:'+sid+'_rot '+dur+'ms ease-in-out infinite;}' +
