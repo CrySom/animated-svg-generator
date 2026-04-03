@@ -400,26 +400,72 @@ const state = { bg: null, syms: [], activeSymIdx: 0, customParticle: null };
 const fx = { bg_ken:false, bg_dim:true, flash_on:true, part_on:true, vig_on:true, vig_pulse:false };
 
 // Layer ordering — bottom to top (first = back, last = front)
-let layerOrder = ['bg', 'vignette', 'sym', 'particles', 'flash'];
-const layerMeta = {
-  bg:        { name: 'Background',    badge: 'BG', icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>' },
-  sym:       { name: 'Elements',      badge: 'EL', icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>' },
-  flash:     { name: 'Flash overlay', badge: 'FX', icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>' },
-  particles: { name: 'Particles',     badge: 'FX', icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M5 3l.75 2.25L8 6l-2.25.75L5 9l-.75-2.25L2 6l2.25-.75z"/><path d="M19 15l.75 2.25L22 18l-2.25.75L19 21l-.75-2.25L16 18l2.25-.75z"/></svg>' },
-  vignette:  { name: 'Vignette',      badge: 'FX', icon: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' },
+// sym_0, sym_1, etc. are individual elements; fx layers are bg, vignette, particles, flash
+let layerOrder = ['bg', 'vignette', 'sym_0', 'particles', 'flash'];
+const fxIcons = {
+  bg:        '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>',
+  sym:       '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>',
+  flash:     '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>',
+  particles: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M5 3l.75 2.25L8 6l-2.25.75L5 9l-.75-2.25L2 6l2.25-.75z"/><path d="M19 15l.75 2.25L22 18l-2.25.75L19 21l-.75-2.25L16 18l2.25-.75z"/></svg>',
+  vignette:  '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
 };
 
+function getLayerMeta(key) {
+  if (key === 'bg') return { name: 'Background', badge: 'BG', icon: fxIcons.bg, panel: 'bg' };
+  if (key === 'flash') return { name: 'Flash overlay', badge: 'FX', icon: fxIcons.flash, panel: 'flash' };
+  if (key === 'particles') return { name: 'Particles', badge: 'FX', icon: fxIcons.particles, panel: 'particles' };
+  if (key === 'vignette') return { name: 'Vignette', badge: 'FX', icon: fxIcons.vignette, panel: 'vignette' };
+  if (key.startsWith('sym_')) {
+    const idx = parseInt(key.split('_')[1]);
+    const sym = state.syms[idx];
+    const symName = sym ? sym.name : 'Element ' + (idx + 1);
+    const thumb = sym ? '<img src="'+sym.data+'" style="width:16px;height:16px;object-fit:contain;border-radius:2px;vertical-align:middle">' : '';
+    return { name: symName, badge: 'E'+(idx+1), icon: thumb || fxIcons.sym, panel: 'sym', symIdx: idx };
+  }
+  return { name: key, badge: '?', icon: '', panel: 'bg' };
+}
+
+// Sync layerOrder when symbols are added/removed
+function syncSymLayers() {
+  // Collect existing sym_ keys in their current positions
+  const existingSymKeys = layerOrder.filter(k => k.startsWith('sym_'));
+  const neededSymKeys = state.syms.map((_, i) => 'sym_' + i);
+
+  // Add new sym layers that don't exist yet (insert before particles or at end)
+  neededSymKeys.forEach(k => {
+    if (layerOrder.indexOf(k) === -1) {
+      // Insert before 'particles' if possible, otherwise before 'flash'
+      const partIdx = layerOrder.indexOf('particles');
+      if (partIdx !== -1) {
+        layerOrder.splice(partIdx, 0, k);
+      } else {
+        const flashIdx = layerOrder.indexOf('flash');
+        if (flashIdx !== -1) layerOrder.splice(flashIdx, 0, k);
+        else layerOrder.push(k);
+      }
+    }
+  });
+
+  // Remove sym layers that no longer exist
+  layerOrder = layerOrder.filter(k => !k.startsWith('sym_') || neededSymKeys.indexOf(k) !== -1);
+}
+
 function renderLayerList() {
+  syncSymLayers();
   const list = document.getElementById('layerList');
   let html = '';
   for (let i = 0; i < layerOrder.length; i++) {
     const key = layerOrder[i];
-    const m = layerMeta[key];
-    const isActive = document.querySelector('#lr_'+key+'_row.active') !== null;
+    const m = getLayerMeta(key);
+    const isActive = document.querySelector('#lr_'+CSS.escape(key)+'_row.active') !== null;
+    const isSym = key.startsWith('sym_');
+    const clickAction = isSym
+      ? 'setActiveSymIdx('+m.symIdx+');selectLayer(\'sym\')'
+      : 'selectLayer(\''+m.panel+'\')';
     html += '<div class="layer-row'+(isActive?' active':'')+'" id="lr_'+key+'_row" draggable="true" data-layer="'+key+'">' +
       '<span class="layer-grip" title="Drag to reorder">⠿</span>' +
       '<span class="icon">'+m.icon+'</span>' +
-      '<div class="layer-name" onclick="selectLayer(\''+key+'\')">'+m.name+'</div>' +
+      '<div class="layer-name" onclick="'+clickAction+'">'+m.name+'</div>' +
       '<div class="layer-badge">'+m.badge+'</div>' +
       '<div class="layer-arrows">' +
         '<button onclick="event.stopPropagation();moveLayer(\''+key+'\',-1)" title="Move up (front)">▲</button>' +
@@ -761,8 +807,14 @@ function setTog(id, val) {
 
 function selectLayer(name) {
   document.querySelectorAll('.layer-row').forEach(r=>r.classList.remove('active'));
-  const lr = document.getElementById('lr_'+name+'_row');
-  if (lr) lr.classList.add('active');
+  // Highlight the correct layer row — for 'sym' highlight the active sym_N row
+  if (name === 'sym') {
+    const lr = document.getElementById('lr_sym_'+state.activeSymIdx+'_row');
+    if (lr) lr.classList.add('active');
+  } else {
+    const lr = document.getElementById('lr_'+name+'_row');
+    if (lr) lr.classList.add('active');
+  }
   document.querySelectorAll('.fx-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel_'+name).classList.add('active');
   const titles = {bg:'Background',sym:'Element — Individual Animation',flash:'Flash Overlay',particles:'Sparkles / Particles',vignette:'Vignette'};
@@ -796,6 +848,7 @@ function addSymSlot(data) {
   state.syms.push(data || null);
   symParams.push(defaultSymAnim());
   renderSymSlots();
+  renderLayerList();
   if (!data) {
     setTimeout(() => {
       const inputs = document.querySelectorAll('.sym-slot input[type=file]');
@@ -813,6 +866,7 @@ function loadSymFile(idx, input) {
       const opt = optimizeImage(img, true);
       state.syms[idx] = { data: opt.data, type: opt.type, name: file.name, w: img.naturalWidth, h: img.naturalHeight };
       renderSymSlots();
+      renderLayerList();
       setActiveSymIdx(idx);
       rebuild();
     };
@@ -823,10 +877,24 @@ function loadSymFile(idx, input) {
 
 function deleteSym(idx, e) {
   e.stopPropagation();
+  // Remove sym_N from layerOrder and re-index remaining sym layers
+  const oldKeys = state.syms.map((_, i) => 'sym_' + i);
   state.syms.splice(idx, 1);
   symParams.splice(idx, 1);
   if (state.activeSymIdx >= state.syms.length) state.activeSymIdx = Math.max(0, state.syms.length-1);
+  // Re-index: sym_0,sym_1,sym_2 → after deleting sym_1 → sym_0(was 0),sym_1(was 2)
+  const removedKey = 'sym_' + idx;
+  layerOrder = layerOrder.filter(k => k !== removedKey);
+  // Shift higher indices down
+  layerOrder = layerOrder.map(k => {
+    if (k.startsWith('sym_')) {
+      const ki = parseInt(k.split('_')[1]);
+      if (ki > idx) return 'sym_' + (ki - 1);
+    }
+    return k;
+  });
   renderSymSlots();
+  renderLayerList();
   rebuild();
 }
 
@@ -925,11 +993,12 @@ function buildSVG() {
     ? '<image width="'+size+'" height="'+size+'" xlink:href="'+state.bg.data+'" preserveAspectRatio="xMidYMid slice"/>'
     : '<rect width="'+size+'" height="'+size+'" fill="#1a1a2e"/>';
 
-  let symEls = '';
+  let symElMap = {};  // sym_0: '...', sym_1: '...'
   let symCSS = '';
   let filterDefs = '';
 
   state.syms.forEach((sym, i) => {
+    symElMap['sym_'+i] = '';
     if (!sym) return;
     const sp = symParams[i];
     if (!sp) return;
@@ -1010,7 +1079,7 @@ function buildSVG() {
       inner = '<g id="'+sid+'_spin" style="transform-origin:'+cx.toFixed(1)+'px '+cy.toFixed(1)+'px">'+inner+'</g>';
     }
 
-    symEls += inner + '\n';
+    symElMap['sym_'+i] = inner + '\n';
   });
 
   let vigEl = '';
@@ -1200,9 +1269,10 @@ function buildSVG() {
   ' viewBox="0 0 '+size+' '+size+'" width="'+size+'" height="'+size+'" shape-rendering="geometricPrecision">' +
   '<style>'+symCSS+'</style>' +
   '<defs>'+filterDefs+'</defs>' +
-  // Assemble layers in user-defined order
-  (function() { var layerMap = { bg: bgEl, vignette: vigEl, sym: symEls, particles: partEl, flash: flashEl };
-    var ordered = ''; for (var li = 0; li < layerOrder.length; li++) ordered += layerMap[layerOrder[li]]; return ordered; })() +
+  // Assemble layers in user-defined order (sym_0, sym_1 etc. are individual elements)
+  (function() { var layerMap = { bg: bgEl, vignette: vigEl, particles: partEl, flash: flashEl };
+    Object.keys(symElMap).forEach(function(k){ layerMap[k] = symElMap[k]; });
+    var ordered = ''; for (var li = 0; li < layerOrder.length; li++) ordered += (layerMap[layerOrder[li]] || ''); return ordered; })() +
   '</svg>';
 }
 
