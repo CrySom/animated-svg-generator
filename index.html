@@ -1183,14 +1183,14 @@ function buildSVG() {
       inner = '<g id="'+sid+'_spin" style="transform-origin:'+cx.toFixed(1)+'px '+cy.toFixed(1)+'px">'+inner+'</g>';
     }
 
-    // SHINE / GLINT — animated diagonal streak
+    // SHINE / GLINT — animated diagonal streak, masked by PNG alpha
     if (sp.shine) {
       const shineDur = sp.shineDur || 800;
       const shineW = sp.shineWidth || 0.15;
       const shineOp = sp.shineOpacity || 0.6;
       const shineAng = sp.shineAngle || 25;
       const shineGradId = sid + '_shgr';
-      const shineClipId = sid + '_shcl';
+      const shineMaskId = sid + '_shm';
       const halfW = (shineW * 100 / 2).toFixed(0);
       // Gradient: transparent → white → transparent stripe
       filterDefs += '<linearGradient id="'+shineGradId+'" x1="0%" y1="0%" x2="100%" y2="0%">' +
@@ -1200,8 +1200,12 @@ function buildSVG() {
         '<stop offset="'+(50 + parseInt(halfW))+'%" stop-color="white" stop-opacity="0"/>' +
         '<stop offset="100%" stop-color="white" stop-opacity="0"/>' +
         '</linearGradient>\n';
-      // Clip to element bounds
-      filterDefs += '<clipPath id="'+shineClipId+'"><rect x="'+r.x.toFixed(1)+'" y="'+r.y.toFixed(1)+'" width="'+r.dw.toFixed(1)+'" height="'+r.dh.toFixed(1)+'"/></clipPath>\n';
+      // Mask by the element image alpha channel — shine only on visible pixels
+      filterDefs += '<mask id="'+shineMaskId+'" style="mask-type:alpha">' +
+        '<image width="'+r.dw.toFixed(1)+'" height="'+r.dh.toFixed(1)+'"' +
+        ' xlink:href="'+sym.data+'" preserveAspectRatio="xMidYMid meet"' +
+        ' transform="translate('+r.x.toFixed(1)+' '+r.y.toFixed(1)+')" />' +
+        '</mask>\n';
       // Sweep rect — wider than element, slides across
       const sweepW = r.dw * 3;
       const startX = r.x - sweepW;
@@ -1209,7 +1213,7 @@ function buildSVG() {
       symCSS += '#'+sid+'_shine{animation:'+sid+'_shine '+shineDur+'ms ease-in-out infinite;}' +
         '@keyframes '+sid+'_shine{0%{transform:translateX('+startX.toFixed(0)+'px) rotate('+shineAng+'deg);}' +
         '100%{transform:translateX('+endX.toFixed(0)+'px) rotate('+shineAng+'deg);}}\n';
-      inner += '<g clip-path="url(#'+shineClipId+')" style="mix-blend-mode:overlay">' +
+      inner += '<g mask="url(#'+shineMaskId+')" style="mix-blend-mode:overlay">' +
         '<rect id="'+sid+'_shine" x="0" y="'+(r.y - r.dh * 0.5).toFixed(1)+'" width="'+sweepW.toFixed(1)+'" height="'+(r.dh * 2).toFixed(1)+'" fill="url(#'+shineGradId+')"/>' +
         '</g>';
     }
