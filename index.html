@@ -230,6 +230,52 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
       <option value="linear">Linear</option>
       <option value="cubic-bezier(0.34,1.56,0.64,1)">Spring</option>
     </select>
+    <hr>
+
+    <!-- SHINE / GLINT -->
+    <div class="effect-row"><div class="tog" id="tog_sym_shine" onclick="toggleSymFx('shine')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="9" y1="18" x2="15" y2="6"/><line x1="6" y1="18" x2="12" y2="6"/></svg></span> Shine glint<small>light streak sweep</small></div></div>
+    <div id="c_sym_shine" style="display:none">
+      <label>Speed</label>
+      <select id="shineDur" onchange="saveSymFx();rebuild()">
+        <option value="1200">Slow</option>
+        <option value="800" selected>Normal</option>
+        <option value="500">Fast</option>
+      </select>
+      <label>Width</label>
+      <select id="shineWidth" onchange="saveSymFx();rebuild()">
+        <option value="0.08">Thin</option>
+        <option value="0.15" selected>Normal</option>
+        <option value="0.25">Wide</option>
+      </select>
+      <label>Opacity <span id="shineOpVal">0.6</span></label>
+      <input type="range" min="20" max="100" value="60" id="shineOpacity" oninput="sv('shineOpVal',(this.value/100).toFixed(2));saveSymFx();rebuild()">
+      <label>Angle</label>
+      <select id="shineAngle" onchange="saveSymFx();rebuild()">
+        <option value="25" selected>25° diagonal</option>
+        <option value="45">45° diagonal</option>
+        <option value="0">0° vertical</option>
+        <option value="90">90° horizontal</option>
+      </select>
+    </div>
+    <hr>
+
+    <!-- BLEND MODE -->
+    <label>Blend mode</label>
+    <select id="symBlendMode" onchange="saveSymFx();rebuild()">
+      <option value="normal">Normal</option>
+      <option value="multiply">Multiply</option>
+      <option value="screen">Screen</option>
+      <option value="overlay">Overlay</option>
+      <option value="darken">Darken</option>
+      <option value="lighten">Lighten</option>
+      <option value="color-dodge">Color Dodge</option>
+      <option value="color-burn">Color Burn</option>
+      <option value="hard-light">Hard Light</option>
+      <option value="soft-light">Soft Light</option>
+      <option value="difference">Difference</option>
+      <option value="exclusion">Exclusion</option>
+      <option value="luminosity">Luminosity</option>
+    </select>
   </div>
 
   <div id="panel_flash" class="fx-panel">
@@ -635,6 +681,10 @@ function defaultSymAnim() {
     flash: true, flashBrightness: 192,
     glow: false, glowColor: '#ffcc00', glowSize: 8,
     rotate: false,
+    // shine glint
+    shine: false, shineDur: 800, shineWidth: 0.15, shineOpacity: 0.6, shineAngle: 25,
+    // blend mode
+    blendMode: 'normal',
     // entrance
     entranceType: 'none', entrDur: 600, entrPause: 200,
     // loops
@@ -749,6 +799,13 @@ function saveSymFx() {
   sp.spinDur = parseInt(document.getElementById('spinDur').value);
   sp.spinDir = parseInt(document.getElementById('spinDir').value);
   sp.easing = document.getElementById('easing').value;
+  // shine
+  sp.shineDur = parseInt(document.getElementById('shineDur').value);
+  sp.shineWidth = parseFloat(document.getElementById('shineWidth').value);
+  sp.shineOpacity = parseInt(document.getElementById('shineOpacity').value) / 100;
+  sp.shineAngle = parseInt(document.getElementById('shineAngle').value);
+  // blend
+  sp.blendMode = document.getElementById('symBlendMode').value;
 }
 
 // Load sym params into UI controls
@@ -798,6 +855,18 @@ function loadSymUI() {
   sv('spinDurVal', sp.spinDur);
   document.getElementById('spinDir').value = sp.spinDir;
   document.getElementById('easing').value = sp.easing;
+
+  // shine
+  setTog('tog_sym_shine', sp.shine);
+  document.getElementById('c_sym_shine').style.display = sp.shine ? 'block' : 'none';
+  document.getElementById('shineDur').value = sp.shineDur;
+  document.getElementById('shineWidth').value = sp.shineWidth;
+  document.getElementById('shineOpacity').value = Math.round(sp.shineOpacity * 100);
+  sv('shineOpVal', sp.shineOpacity.toFixed(2));
+  document.getElementById('shineAngle').value = sp.shineAngle;
+
+  // blend mode
+  document.getElementById('symBlendMode').value = sp.blendMode || 'normal';
 }
 
 function setTog(id, val) {
@@ -914,6 +983,7 @@ function countActiveEffects(sp) {
   if (sp.entranceType && sp.entranceType !== 'none') c++;
   if (sp.loopFloat) c++;
   if (sp.loopSpin) c++;
+  if (sp.shine) c++;
   return c;
 }
 
@@ -1077,6 +1147,42 @@ function buildSVG() {
       const sd = sp.spinDir > 0 ? 1 : -1;
       symCSS += '#'+sid+'_spin{animation:'+sid+'_spin '+sp.spinDur+'ms linear infinite;}@keyframes '+sid+'_spin{0%{transform:rotate(0deg);}100%{transform:rotate('+(sd*360)+'deg);}}\n';
       inner = '<g id="'+sid+'_spin" style="transform-origin:'+cx.toFixed(1)+'px '+cy.toFixed(1)+'px">'+inner+'</g>';
+    }
+
+    // SHINE / GLINT — animated diagonal streak
+    if (sp.shine) {
+      const shineDur = sp.shineDur || 800;
+      const shineW = sp.shineWidth || 0.15;
+      const shineOp = sp.shineOpacity || 0.6;
+      const shineAng = sp.shineAngle || 25;
+      const shineGradId = sid + '_shgr';
+      const shineClipId = sid + '_shcl';
+      const halfW = (shineW * 100 / 2).toFixed(0);
+      // Gradient: transparent → white → transparent stripe
+      filterDefs += '<linearGradient id="'+shineGradId+'" x1="0%" y1="0%" x2="100%" y2="0%">' +
+        '<stop offset="0%" stop-color="white" stop-opacity="0"/>' +
+        '<stop offset="'+(50 - halfW)+'%" stop-color="white" stop-opacity="0"/>' +
+        '<stop offset="50%" stop-color="white" stop-opacity="'+shineOp+'"/>' +
+        '<stop offset="'+(50 + parseInt(halfW))+'%" stop-color="white" stop-opacity="0"/>' +
+        '<stop offset="100%" stop-color="white" stop-opacity="0"/>' +
+        '</linearGradient>\n';
+      // Clip to element bounds
+      filterDefs += '<clipPath id="'+shineClipId+'"><rect x="'+r.x.toFixed(1)+'" y="'+r.y.toFixed(1)+'" width="'+r.dw.toFixed(1)+'" height="'+r.dh.toFixed(1)+'"/></clipPath>\n';
+      // Sweep rect — wider than element, slides across
+      const sweepW = r.dw * 3;
+      const startX = r.x - sweepW;
+      const endX = r.x + r.dw;
+      symCSS += '#'+sid+'_shine{animation:'+sid+'_shine '+shineDur+'ms ease-in-out infinite;}' +
+        '@keyframes '+sid+'_shine{0%{transform:translateX('+startX.toFixed(0)+'px) rotate('+shineAng+'deg);}' +
+        '100%{transform:translateX('+endX.toFixed(0)+'px) rotate('+shineAng+'deg);}}\n';
+      inner += '<g clip-path="url(#'+shineClipId+')" style="mix-blend-mode:overlay">' +
+        '<rect id="'+sid+'_shine" x="0" y="'+(r.y - r.dh * 0.5).toFixed(1)+'" width="'+sweepW.toFixed(1)+'" height="'+(r.dh * 2).toFixed(1)+'" fill="url(#'+shineGradId+')"/>' +
+        '</g>';
+    }
+
+    // BLEND MODE — wrap in group with mix-blend-mode
+    if (sp.blendMode && sp.blendMode !== 'normal') {
+      inner = '<g style="mix-blend-mode:'+sp.blendMode+'">'+inner+'</g>';
     }
 
     symElMap['sym_'+i] = inner + '\n';
