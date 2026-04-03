@@ -83,10 +83,13 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
 .add-slot-btn .icon { opacity:0.5; }
 .upload-label .icon { opacity:0.4; display:block; margin:0 auto 4px; }
 
+.sym-anim-badge { display:inline-flex; gap:3px; margin-left:auto; }
+.sym-anim-badge span { font-size:7px; background:#1a2e1a; color:#4a8a4a; padding:1px 4px; border-radius:3px; letter-spacing:0.05em; }
+
 </style>
 </head>
 <body>
-<h1 style="display:flex;align-items:center;gap:8px"><span class="icon" style="opacity:0.4"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Animated SVG Generator v4</h1>
+<h1 style="display:flex;align-items:center;gap:8px"><span class="icon" style="opacity:0.4"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Animated SVG Generator v5</h1>
 <div class="layout">
 
 <!-- LEFT -->
@@ -100,15 +103,15 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
   </div>
 
   <div class="panel" style="margin-bottom:10px">
-    <div class="panel-title"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span> Symbol layers</div>
+    <div class="panel-title"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span> Elements</div>
     <div class="sym-slots" id="symSlots"></div>
-    <div class="add-slot-btn" onclick="addSymSlot()" style="margin-top:6px"><span class="icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span> <span>Add symbol</span></div>
+    <div class="add-slot-btn" onclick="addSymSlot()" style="margin-top:6px"><span class="icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span> <span>Add element</span></div>
   </div>
 
   <div class="panel">
     <div class="panel-title"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span> Layers</div>
     <div class="layer-row active" onclick="selectLayer('bg')" id="lr_bg"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span><div class="layer-name">Background</div><div class="layer-badge">BG</div></div>
-    <div class="layer-row" onclick="selectLayer('sym')" id="lr_sym"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span><div class="layer-name">Symbol</div><div class="layer-badge">SYM</div></div>
+    <div class="layer-row" onclick="selectLayer('sym')" id="lr_sym"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg></span><div class="layer-name">Elements</div><div class="layer-badge">EL</div></div>
     <div class="layer-row" onclick="selectLayer('flash')" id="lr_flash"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span><div class="layer-name">Flash overlay</div><div class="layer-badge">FX</div></div>
     <div class="layer-row" onclick="selectLayer('particles')" id="lr_particles"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M5 3l.75 2.25L8 6l-2.25.75L5 9l-.75-2.25L2 6l2.25-.75z"/><path d="M19 15l.75 2.25L22 18l-2.25.75L19 21l-.75-2.25L16 18l2.25-.75z"/></svg></span><div class="layer-name">Particles</div><div class="layer-badge">FX</div></div>
     <div class="layer-row" onclick="selectLayer('vignette')" id="lr_vignette"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg></span><div class="layer-name">Vignette</div><div class="layer-badge">FX</div></div>
@@ -156,8 +159,10 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
     <div class="effect-row"><div class="tog on" id="tog_bg_dim" onclick="tfx('bg_dim')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg></span> Dim on flash<small>bg dims when sym flashes</small></div></div>
   </div>
 
+  <!-- PER-ELEMENT ANIMATION PANEL -->
   <div id="panel_sym" class="fx-panel">
-    <div id="activeSymName" style="font-size:9px;color:#4a7a4a;margin-bottom:8px">— no symbol selected —</div>
+    <div id="activeSymName" style="font-size:9px;color:#4a7a4a;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid #1e1e22">— select an element —</div>
+
     <label>X position <span id="symXVal">50</span>%</label>
     <input type="range" min="0" max="100" value="50" id="symX">
     <label>Y position <span id="symYVal">50</span>%</label>
@@ -166,28 +171,38 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
     <input type="range" min="10" max="200" value="100" id="symSize">
     <div style="font-size:9px;color:#333;margin-top:4px" id="symNaturalDims">natural: —</div>
     <hr>
-    <div class="effect-row"><div class="tog on" id="tog_sym_scale" onclick="tfx('sym_scale')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></span> Scale bounce<small>pulse in size</small></div></div>
+
+    <!-- SCALE BOUNCE -->
+    <div class="effect-row"><div class="tog on" id="tog_sym_scale" onclick="toggleSymFx('scale')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 3 21 9"/><polyline points="9 21 3 21 3 15"/><line x1="21" y1="3" x2="14" y2="10"/><line x1="3" y1="21" x2="10" y2="14"/></svg></span> Scale bounce<small>pulse in size</small></div></div>
     <div id="c_sym_scale">
       <label>Peak scale <span id="scaleVal">1.12</span>x</label>
-      <input type="range" min="100" max="160" value="112" id="scalePeak" oninput="document.getElementById('scaleVal').textContent=(this.value/100).toFixed(2);rebuild()">
+      <input type="range" min="100" max="160" value="112" id="scalePeak" oninput="document.getElementById('scaleVal').textContent=(this.value/100).toFixed(2);saveSymFx();rebuild()">
     </div>
-    <div class="effect-row"><div class="tog on" id="tog_sym_flash" onclick="tfx('sym_flash')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Brightness flash</div></div>
+
+    <!-- BRIGHTNESS FLASH -->
+    <div class="effect-row"><div class="tog on" id="tog_sym_flash" onclick="toggleSymFx('flash')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg></span> Brightness flash</div></div>
     <div id="c_sym_flash">
       <label>Brightness <span id="flashVal">192</span>%</label>
-      <input type="range" min="110" max="400" value="192" id="flashBrightness" oninput="sv('flashVal',this.value);rebuild()">
+      <input type="range" min="110" max="400" value="192" id="flashBrightness" oninput="sv('flashVal',this.value);saveSymFx();rebuild()">
     </div>
-    <div class="effect-row"><div class="tog" id="tog_sym_glow" onclick="tfx('sym_glow')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="6.34" y1="17.66" x2="4.93" y2="19.07"/><line x1="19.07" y1="4.93" x2="17.66" y2="6.34"/></svg></span> Glow<small>colored halo</small></div></div>
+
+    <!-- GLOW -->
+    <div class="effect-row"><div class="tog" id="tog_sym_glow" onclick="toggleSymFx('glow')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><line x1="12" y1="2" x2="12" y2="4"/><line x1="12" y1="20" x2="12" y2="22"/><line x1="4.93" y1="4.93" x2="6.34" y2="6.34"/><line x1="17.66" y1="17.66" x2="19.07" y2="19.07"/><line x1="2" y1="12" x2="4" y2="12"/><line x1="20" y1="12" x2="22" y2="12"/><line x1="6.34" y1="17.66" x2="4.93" y2="19.07"/><line x1="19.07" y1="4.93" x2="17.66" y2="6.34"/></svg></span> Glow<small>colored halo</small></div></div>
     <div id="c_sym_glow" style="display:none">
       <label>Color</label>
-      <input type="color" value="#ffcc00" id="glowColor" onchange="rebuild()" style="width:100%;height:26px;background:#18181c;border:1px solid #252528;border-radius:4px;cursor:pointer">
+      <input type="color" value="#ffcc00" id="glowColor" onchange="saveSymFx();rebuild()" style="width:100%;height:26px;background:#18181c;border:1px solid #252528;border-radius:4px;cursor:pointer">
       <label>Size <span id="glowSzVal">8</span>px</label>
-      <input type="range" min="2" max="30" value="8" id="glowSize" oninput="sv('glowSzVal',this.value);rebuild()">
+      <input type="range" min="2" max="30" value="8" id="glowSize" oninput="sv('glowSzVal',this.value);saveSymFx();rebuild()">
     </div>
-    <div class="effect-row"><div class="tog" id="tog_sym_rotate" onclick="tfx('sym_rotate')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span> Rotation wobble<small>±4deg oscillation</small></div></div>
+
+    <!-- ROTATION WOBBLE -->
+    <div class="effect-row"><div class="tog" id="tog_sym_rotate" onclick="toggleSymFx('rotate')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span> Rotation wobble<small>±4deg oscillation</small></div></div>
     <hr>
+
+    <!-- ENTRANCE / LOOP -->
     <div style="font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:#3a3a44;margin-bottom:8px;margin-top:2px">Entrance / Loop</div>
     <label>Entrance type</label>
-    <select id="entranceType" onchange="rebuild()">
+    <select id="entranceType" onchange="saveSymFx();rebuild()">
       <option value="none">None</option>
       <option value="fade">Fade in</option>
       <option value="slideBottom">Slide from bottom</option>
@@ -201,22 +216,23 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
       <option value="dropBounce">Drop + Bounce</option>
     </select>
     <label>Entrance duration <span id="entrDurVal">600</span>ms</label>
-    <input type="range" min="100" max="2000" step="50" value="600" id="entrDur" oninput="sv('entrDurVal',this.value);rebuild()">
+    <input type="range" min="100" max="2000" step="50" value="600" id="entrDur" oninput="sv('entrDurVal',this.value);saveSymFx();rebuild()">
     <label>Loop pause after entrance <span id="entrPauseVal">200</span>ms</label>
-    <input type="range" min="0" max="1000" step="50" value="200" id="entrPause" oninput="sv('entrPauseVal',this.value);rebuild()">
-    <div class="effect-row" style="margin-top:8px"><div class="tog" id="tog_loop_float" onclick="tfx('loop_float')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg></span> Float loop<small>gentle up/down after entrance</small></div></div>
-    <div class="effect-row"><div class="tog" id="tog_loop_spin" onclick="tfx('loop_spin')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span> Continuous spin<small>full 360° rotation loop</small></div></div>
+    <input type="range" min="0" max="1000" step="50" value="200" id="entrPause" oninput="sv('entrPauseVal',this.value);saveSymFx();rebuild()">
+
+    <div class="effect-row" style="margin-top:8px"><div class="tog" id="tog_loop_float" onclick="toggleSymFx('loopFloat')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="5 9 2 12 5 15"/><polyline points="9 5 12 2 15 5"/><polyline points="15 19 12 22 9 19"/><polyline points="19 9 22 12 19 15"/><line x1="2" y1="12" x2="22" y2="12"/><line x1="12" y1="2" x2="12" y2="22"/></svg></span> Float loop<small>gentle up/down after entrance</small></div></div>
+    <div class="effect-row"><div class="tog" id="tog_loop_spin" onclick="toggleSymFx('loopSpin')"></div><div class="effect-name"><span class="icon"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg></span> Continuous spin<small>full 360° rotation loop</small></div></div>
     <div id="c_loop_spin" style="display:none">
       <label>Spin duration <span id="spinDurVal">2000</span>ms</label>
-      <input type="range" min="300" max="8000" step="100" value="2000" id="spinDur" oninput="sv('spinDurVal',this.value);rebuild()">
+      <input type="range" min="300" max="8000" step="100" value="2000" id="spinDur" oninput="sv('spinDurVal',this.value);saveSymFx();rebuild()">
       <label>Direction</label>
-      <select id="spinDir" onchange="rebuild()">
+      <select id="spinDir" onchange="saveSymFx();rebuild()">
         <option value="1">Clockwise</option>
         <option value="-1">Counter-clockwise</option>
       </select>
     </div>
     <label>Easing</label>
-    <select id="easing" onchange="rebuild()">
+    <select id="easing" onchange="saveSymFx();rebuild()">
       <option value="cubic-bezier(0.42,0,0.58,1)">Ease In-Out</option>
       <option value="ease-out">Ease Out</option>
       <option value="linear">Linear</option>
@@ -248,7 +264,6 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
     <label>Size <span id="partSzVal">4</span>px</label>
     <input type="range" min="2" max="14" value="4" id="partSize" oninput="sv('partSzVal',this.value);rebuild()">
     <label style="margin-top:10px">Shape</label>
-    <!-- Tab switcher -->
     <div style="display:flex;gap:4px;margin-top:4px;margin-bottom:8px">
       <div id="ptab_preset" onclick="setPartTab('preset')"
         style="flex:1;padding:5px 6px;font-size:9px;letter-spacing:0.1em;text-transform:uppercase;text-align:center;border-radius:4px;cursor:pointer;background:#1a2e1a;border:1px solid #2a5a2a;color:#5aaa5a;transition:all 0.15s">
@@ -260,7 +275,6 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
       </div>
     </div>
 
-    <!-- Presets tab -->
     <div id="partTab_preset">
       <div style="font-size:9px;color:#333;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:5px">Basic</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px;margin-bottom:10px">
@@ -279,16 +293,16 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
       </div>
       <div style="font-size:9px;color:#333;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:5px">Casino</div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:4px">
-        <div class="preset-shape" id="pshape_heart" onclick="setPartShape('heart')" title="Hearts ♥">
+        <div class="preset-shape" id="pshape_heart" onclick="setPartShape('heart')" title="Hearts">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 21.593c-5.63-5.539-11-10.297-11-14.402C1 3.732 3.195 2 6.5 2c1.984 0 3.98 1.07 5.5 2.857C13.52 3.07 15.516 2 17.5 2 20.805 2 23 3.732 23 7.19c0 4.106-5.37 8.863-11 14.402z"/></svg>
         </div>
-        <div class="preset-shape" id="pshape_spade" onclick="setPartShape('spade')" title="Spades ♠">
+        <div class="preset-shape" id="pshape_spade" onclick="setPartShape('spade')" title="Spades">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><path d="M12 2C7 2 3 6 3 10c0 3.5 2.5 6 5 7-1 1-2 2-4 2h10c-2 0-3-1-4-2 2.5-1 5-3.5 5-7 0-4-4-8-3-8z"/><path d="M12 2C17 2 21 6 21 10c0 3.5-2.5 6-5 7 1 1 2 2 4 2H8c2 0 3-1 4-2-2.5-1-5-3.5-5-7 0-4 4-8 5-8z"/><ellipse cx="12" cy="2" rx="4" ry="4"/></svg>
         </div>
-        <div class="preset-shape" id="pshape_club" onclick="setPartShape('club')" title="Clubs ♣">
+        <div class="preset-shape" id="pshape_club" onclick="setPartShape('club')" title="Clubs">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><circle cx="12" cy="8" r="4"/><circle cx="7" cy="13" r="3.5"/><circle cx="17" cy="13" r="3.5"/><rect x="10" y="14" width="4" height="5" rx="1"/><rect x="8" y="18" width="8" height="2" rx="1"/></svg>
         </div>
-        <div class="preset-shape" id="pshape_diamondsuit" onclick="setPartShape('diamondsuit')" title="Diamonds ♦">
+        <div class="preset-shape" id="pshape_diamondsuit" onclick="setPartShape('diamondsuit')" title="Diamonds">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor" stroke="none"><polygon points="12,2 21,12 12,22 3,12"/></svg>
         </div>
         <div class="preset-shape" id="pshape_coin" onclick="setPartShape('coin')" title="Coin">
@@ -306,7 +320,6 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
       </div>
     </div>
 
-    <!-- Custom tab -->
     <div id="partTab_custom" style="display:none">
       <div class="upload-zone" id="customPartUploadZone" style="padding:10px;margin-bottom:0">
         <input type="file" accept="image/svg+xml,image/png,image/webp" onchange="loadCustomParticle(this)">
@@ -322,7 +335,7 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
           <div id="customPartName" style="font-size:9px;color:#5a9a5a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis"></div>
           <div id="customPartDims" style="font-size:8px;color:#333;margin-top:2px"></div>
         </div>
-        <div onclick="clearCustomParticle()" style="font-size:10px;color:#444;cursor:pointer;padding:2px 6px;border:1px solid #2a2a2e;border-radius:3px" title="Remove">×</div>
+        <div onclick="clearCustomParticle()" style="font-size:10px;color:#444;cursor:pointer;padding:2px 6px;border:1px solid #2a2a2e;border-radius:3px" title="Remove">x</div>
       </div>
       <div style="display:flex;align-items:center;gap:8px;margin-top:8px">
         <input type="checkbox" id="customPartTint" onchange="rebuild()" style="accent-color:#4a7a4a;width:14px;height:14px;flex-shrink:0">
@@ -345,7 +358,27 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
 
 <script>
 const state = { bg: null, syms: [], activeSymIdx: 0, customParticle: null };
-const fx = { bg_ken:false, bg_dim:true, sym_scale:true, sym_flash:true, sym_glow:false, sym_rotate:false, flash_on:true, part_on:true, vig_on:true, vig_pulse:false, loop_float:false, loop_spin:false };
+// Global effects (bg, flash overlay, particles, vignette)
+const fx = { bg_ken:false, bg_dim:true, flash_on:true, part_on:true, vig_on:true, vig_pulse:false };
+
+// Per-element animation defaults
+function defaultSymAnim() {
+  return {
+    x: 50, y: 50, size: 100,
+    // effects
+    scale: true, scalePeak: 112,
+    flash: true, flashBrightness: 192,
+    glow: false, glowColor: '#ffcc00', glowSize: 8,
+    rotate: false,
+    // entrance
+    entranceType: 'none', entrDur: 600, entrPause: 200,
+    // loops
+    loopFloat: false, loopSpin: false, spinDur: 2000, spinDir: 1,
+    // easing
+    easing: 'cubic-bezier(0.42,0,0.58,1)'
+  };
+}
+
 const symParams = [];
 
 function sv(id, val) { const el = document.getElementById(id); if(el) el.textContent = val; }
@@ -357,7 +390,6 @@ function setPartTab(tab) {
   currentPartTab = tab;
   document.getElementById('partTab_preset').style.display = tab === 'preset' ? 'block' : 'none';
   document.getElementById('partTab_custom').style.display = tab === 'custom' ? 'block' : 'none';
-  // tab styles
   const presetTab = document.getElementById('ptab_preset');
   const customTab = document.getElementById('ptab_custom');
   if (tab === 'preset') {
@@ -381,8 +413,6 @@ function setPartShape(shape) {
   rebuild();
 }
 
-function onPartStyleChange() { rebuild(); }
-
 function loadCustomParticle(input) {
   const file = input.files[0]; if (!file) return;
   const reader = new FileReader();
@@ -390,17 +420,16 @@ function loadCustomParticle(input) {
     const img = new Image();
     img.onload = () => {
       state.customParticle = { data: e.target.result, type: file.type, name: file.name, w: img.naturalWidth, h: img.naturalHeight };
-      // Show preview
       const preview = document.getElementById('customPartPreview');
       const thumb = document.getElementById('customPartThumb');
       const nameEl = document.getElementById('customPartName');
       const dimsEl = document.getElementById('customPartDims');
       const uploadZone = document.getElementById('customPartUploadZone');
-      if (preview) { preview.style.display = 'flex'; }
+      if (preview) preview.style.display = 'flex';
       if (uploadZone) uploadZone.style.display = 'none';
       if (thumb) thumb.src = e.target.result;
       if (nameEl) nameEl.textContent = file.name;
-      if (dimsEl) dimsEl.textContent = img.naturalWidth + '×' + img.naturalHeight + 'px';
+      if (dimsEl) dimsEl.textContent = img.naturalWidth + 'x' + img.naturalHeight + 'px';
       rebuild();
     };
     img.src = e.target.result;
@@ -417,13 +446,96 @@ function clearCustomParticle() {
   rebuild();
 }
 
+// Global fx toggle (bg, flash, particles, vignette)
 function tfx(key) {
   fx[key] = !fx[key];
   const tog = document.getElementById('tog_'+key);
   if (tog) tog.classList.toggle('on', fx[key]);
-  const deps = { sym_scale:'c_sym_scale', sym_flash:'c_sym_flash', sym_glow:'c_sym_glow', loop_spin:'c_loop_spin' };
-  if (deps[key]) document.getElementById(deps[key]).style.display = fx[key] ? 'block' : 'none';
   rebuild();
+}
+
+// Per-element fx toggle
+function toggleSymFx(prop) {
+  const idx = state.activeSymIdx;
+  const sp = symParams[idx];
+  if (!sp) return;
+  sp[prop] = !sp[prop];
+  loadSymUI();
+  rebuild();
+}
+
+// Save current UI values into active sym params
+function saveSymFx() {
+  const idx = state.activeSymIdx;
+  const sp = symParams[idx];
+  if (!sp) return;
+  sp.x = parseInt(document.getElementById('symX').value);
+  sp.y = parseInt(document.getElementById('symY').value);
+  sp.size = parseInt(document.getElementById('symSize').value);
+  sp.scalePeak = parseInt(document.getElementById('scalePeak').value);
+  sp.flashBrightness = parseInt(document.getElementById('flashBrightness').value);
+  sp.glowColor = document.getElementById('glowColor').value;
+  sp.glowSize = parseInt(document.getElementById('glowSize').value);
+  sp.entranceType = document.getElementById('entranceType').value;
+  sp.entrDur = parseInt(document.getElementById('entrDur').value);
+  sp.entrPause = parseInt(document.getElementById('entrPause').value);
+  sp.spinDur = parseInt(document.getElementById('spinDur').value);
+  sp.spinDir = parseInt(document.getElementById('spinDir').value);
+  sp.easing = document.getElementById('easing').value;
+}
+
+// Load sym params into UI controls
+function loadSymUI() {
+  const idx = state.activeSymIdx;
+  const sym = state.syms[idx];
+  const sp = symParams[idx];
+  if (!sym || !sp) {
+    document.getElementById('activeSymName').textContent = '— select an element —';
+    return;
+  }
+  document.getElementById('activeSymName').textContent = 'editing: ' + sym.name + ' (#' + (idx+1) + ')';
+  document.getElementById('symX').value = sp.x; sv('symXVal', sp.x);
+  document.getElementById('symY').value = sp.y; sv('symYVal', sp.y);
+  document.getElementById('symSize').value = sp.size; sv('symSizeVal', sp.size);
+  document.getElementById('symNaturalDims').textContent = 'natural: ' + sym.w + 'x' + sym.h + 'px';
+
+  // toggles
+  setTog('tog_sym_scale', sp.scale);
+  document.getElementById('c_sym_scale').style.display = sp.scale ? 'block' : 'none';
+  document.getElementById('scalePeak').value = sp.scalePeak;
+  sv('scaleVal', (sp.scalePeak/100).toFixed(2));
+
+  setTog('tog_sym_flash', sp.flash);
+  document.getElementById('c_sym_flash').style.display = sp.flash ? 'block' : 'none';
+  document.getElementById('flashBrightness').value = sp.flashBrightness;
+  sv('flashVal', sp.flashBrightness);
+
+  setTog('tog_sym_glow', sp.glow);
+  document.getElementById('c_sym_glow').style.display = sp.glow ? 'block' : 'none';
+  document.getElementById('glowColor').value = sp.glowColor;
+  document.getElementById('glowSize').value = sp.glowSize;
+  sv('glowSzVal', sp.glowSize);
+
+  setTog('tog_sym_rotate', sp.rotate);
+
+  document.getElementById('entranceType').value = sp.entranceType;
+  document.getElementById('entrDur').value = sp.entrDur;
+  sv('entrDurVal', sp.entrDur);
+  document.getElementById('entrPause').value = sp.entrPause;
+  sv('entrPauseVal', sp.entrPause);
+
+  setTog('tog_loop_float', sp.loopFloat);
+  setTog('tog_loop_spin', sp.loopSpin);
+  document.getElementById('c_loop_spin').style.display = sp.loopSpin ? 'block' : 'none';
+  document.getElementById('spinDur').value = sp.spinDur;
+  sv('spinDurVal', sp.spinDur);
+  document.getElementById('spinDir').value = sp.spinDir;
+  document.getElementById('easing').value = sp.easing;
+}
+
+function setTog(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.classList.toggle('on', val);
 }
 
 function selectLayer(name) {
@@ -431,9 +543,9 @@ function selectLayer(name) {
   document.getElementById('lr_'+name).classList.add('active');
   document.querySelectorAll('.fx-panel').forEach(p=>p.classList.remove('active'));
   document.getElementById('panel_'+name).classList.add('active');
-  const titles = {bg:'Background',sym:'Symbol — Position & Effects',flash:'Flash Overlay',particles:'Sparkles / Particles',vignette:'Vignette'};
+  const titles = {bg:'Background',sym:'Element — Individual Animation',flash:'Flash Overlay',particles:'Sparkles / Particles',vignette:'Vignette'};
   document.getElementById('rightTitle').textContent = titles[name];
-  if (name === 'sym') updateSymPanel();
+  if (name === 'sym') loadSymUI();
 }
 
 function loadBg(input) {
@@ -445,7 +557,7 @@ function loadBg(input) {
       state.bg = { data: e.target.result, type: file.type, w: img.naturalWidth, h: img.naturalHeight };
       const zone = document.getElementById('bgZone');
       zone.classList.add('has-file');
-      document.getElementById('bgLabel').innerHTML = `<img style="width:28px;height:28px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px" src="${e.target.result}"> ${file.name}`;
+      document.getElementById('bgLabel').innerHTML = '<img style="width:28px;height:28px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px" src="' + e.target.result + '"> ' + file.name;
       rebuild();
     };
     img.src = e.target.result;
@@ -456,7 +568,7 @@ function loadBg(input) {
 function addSymSlot(data) {
   const idx = state.syms.length;
   state.syms.push(data || null);
-  symParams.push({ x: 50, y: 50, size: 100 });
+  symParams.push(defaultSymAnim());
   renderSymSlots();
   if (!data) {
     setTimeout(() => {
@@ -494,7 +606,20 @@ function deleteSym(idx, e) {
 function setActiveSymIdx(idx) {
   state.activeSymIdx = idx;
   renderSymSlots();
-  updateSymPanel();
+  loadSymUI();
+}
+
+function countActiveEffects(sp) {
+  if (!sp) return 0;
+  let c = 0;
+  if (sp.scale) c++;
+  if (sp.flash) c++;
+  if (sp.glow) c++;
+  if (sp.rotate) c++;
+  if (sp.entranceType && sp.entranceType !== 'none') c++;
+  if (sp.loopFloat) c++;
+  if (sp.loopSpin) c++;
+  return c;
 }
 
 function renderSymSlots() {
@@ -504,149 +629,117 @@ function renderSymSlots() {
     const div = document.createElement('div');
     div.className = 'sym-slot' + (i === state.activeSymIdx ? ' active' : '');
     div.onclick = () => { setActiveSymIdx(i); selectLayer('sym'); };
+    const sp = symParams[i];
+    const effectCount = countActiveEffects(sp);
     if (!sym) {
-      div.innerHTML = `
-        <input type="file" accept="image/*" onchange="loadSymFile(${i},this)">
-        <div class="sym-thumb-empty">+</div>
-        <div class="sym-info"><div class="sym-name">click to load</div></div>
-        <div class="sym-del" onclick="deleteSym(${i},event)">×</div>`;
+      div.innerHTML = '<input type="file" accept="image/*" onchange="loadSymFile(' + i + ',this)">' +
+        '<div class="sym-thumb-empty">+</div>' +
+        '<div class="sym-info"><div class="sym-name">click to load</div></div>' +
+        '<div class="sym-del" onclick="deleteSym(' + i + ',event)">x</div>';
     } else {
-      div.innerHTML = `
-        <input type="file" accept="image/*" onchange="loadSymFile(${i},this)" style="z-index:1">
-        <img class="sym-thumb" src="${sym.data}">
-        <div class="sym-info">
-          <div class="sym-name">${sym.name}</div>
-          <div class="sym-dims">${sym.w}×${sym.h}px · scale ${symParams[i]?.size||100}%</div>
-        </div>
-        <div class="sym-del" onclick="deleteSym(${i},event)">×</div>`;
+      div.innerHTML = '<input type="file" accept="image/*" onchange="loadSymFile(' + i + ',this)" style="z-index:1">' +
+        '<img class="sym-thumb" src="' + sym.data + '">' +
+        '<div class="sym-info">' +
+          '<div class="sym-name">' + sym.name + '</div>' +
+          '<div class="sym-dims">' + sym.w + 'x' + sym.h + 'px · ' + effectCount + ' fx</div>' +
+        '</div>' +
+        '<div class="sym-del" onclick="deleteSym(' + i + ',event)">x</div>';
     }
     container.appendChild(div);
   });
 }
 
-function updateSymPanel() {
-  const idx = state.activeSymIdx;
-  const sym = state.syms[idx];
-  const p = symParams[idx];
-  if (!sym || !p) { document.getElementById('activeSymName').textContent = '— no symbol —'; return; }
-  document.getElementById('activeSymName').textContent = `editing: ${sym.name}`;
-  document.getElementById('symX').value = p.x; sv('symXVal', p.x);
-  document.getElementById('symY').value = p.y; sv('symYVal', p.y);
-  document.getElementById('symSize').value = p.size; sv('symSizeVal', p.size);
-  document.getElementById('symNaturalDims').textContent = `natural: ${sym.w}×${sym.h}px`;
-}
-
-function getSymP() {
-  const idx = state.activeSymIdx;
-  if (!symParams[idx]) return;
-  symParams[idx].x = parseInt(document.getElementById('symX').value);
-  symParams[idx].y = parseInt(document.getElementById('symY').value);
-  symParams[idx].size = parseInt(document.getElementById('symSize').value);
-  sv('symXVal', symParams[idx].x);
-  sv('symYVal', symParams[idx].y);
-  sv('symSizeVal', symParams[idx].size);
-  const sym = state.syms[idx];
-  if(sym) document.getElementById('symNaturalDims').textContent = `natural: ${sym.w}×${sym.h}px`;
-  document.getElementById('coordsBadge').textContent = `x:${symParams[idx].x}% y:${symParams[idx].y}%`;
-}
-
-document.getElementById('symX').oninput = function() { getSymP(); rebuild(); };
-document.getElementById('symY').oninput = function() { getSymP(); rebuild(); };
-document.getElementById('symSize').oninput = function() { getSymP(); rebuild(); };
+document.getElementById('symX').oninput = function() { saveSymFx(); sv('symXVal',this.value); document.getElementById('coordsBadge').textContent='x:'+this.value+'% y:'+document.getElementById('symY').value+'%'; rebuild(); };
+document.getElementById('symY').oninput = function() { saveSymFx(); sv('symYVal',this.value); document.getElementById('coordsBadge').textContent='x:'+document.getElementById('symX').value+'% y:'+this.value+'%'; rebuild(); };
+document.getElementById('symSize').oninput = function() { saveSymFx(); sv('symSizeVal',this.value); rebuild(); };
 
 function getP() {
   return {
     size: parseInt(document.getElementById('canvasSize').value),
     dur: document.getElementById('duration').value,
-    easing: document.getElementById('easing').value,
-    flash: document.getElementById('flashBrightness').value,
-    scale: (document.getElementById('scalePeak').value/100).toFixed(3),
     flashColor: document.getElementById('flashColor').value,
     flashOpacity: document.getElementById('flashOpacity').value/100,
     flashTiming: document.getElementById('flashTiming').value,
     partCount: parseInt(document.getElementById('partCount').value),
     partColor: document.getElementById('partColor').value,
     partSize: parseInt(document.getElementById('partSize').value),
-    partStyle: (typeof currentPartStyle !== 'undefined') ? currentPartStyle : 'circle',
+    partStyle: currentPartStyle,
     customPartTint: document.getElementById('customPartTint') && document.getElementById('customPartTint').checked,
     vigInt: document.getElementById('vigInt').value/100,
     vigColor: document.getElementById('vigColor').value,
-    glowColor: document.getElementById('glowColor').value,
-    glowSize: document.getElementById('glowSize').value,
-    entranceType: document.getElementById('entranceType').value,
-    entrDur: parseInt(document.getElementById('entrDur').value),
-    entrPause: parseInt(document.getElementById('entrPause').value),
-    spinDur: parseInt(document.getElementById('spinDur').value),
-    spinDir: parseInt(document.getElementById('spinDir').value),
   };
 }
 
 function hexRgb(hex) {
-  return `${parseInt(hex.slice(1,3),16)},${parseInt(hex.slice(3,5),16)},${parseInt(hex.slice(5,7),16)}`;
+  return parseInt(hex.slice(1,3),16)+','+parseInt(hex.slice(3,5),16)+','+parseInt(hex.slice(5,7),16);
 }
 
-function symRect(sym, p, size) {
-  const scalePct = p.size / 100;
+function symRect(sym, sp, size) {
+  const scalePct = sp.size / 100;
   const maxDim = size * scalePct;
   const ratio = sym.w / sym.h;
   let dw, dh;
   if (ratio >= 1) { dw = maxDim; dh = maxDim / ratio; }
   else { dh = maxDim; dw = maxDim * ratio; }
-  const cx = size * (p.x / 100);
-  const cy = size * (p.y / 100);
+  const cx = size * (sp.x / 100);
+  const cy = size * (sp.y / 100);
   return { dw, dh, cx, cy, x: cx - dw/2, y: cy - dh/2 };
 }
 
 function buildSVG() {
   const p = getP();
-  const { size, dur, easing } = p;
+  const { size, dur } = p;
   const uid = 'g' + Math.random().toString(36).slice(2,8);
 
   const bgEl = state.bg
-    ? `<image width="${size}" height="${size}" xlink:href="${state.bg.data}" preserveAspectRatio="xMidYMid slice"/>`
-    : `<rect width="${size}" height="${size}" fill="#1a1a2e"/>`;
+    ? '<image width="'+size+'" height="'+size+'" xlink:href="'+state.bg.data+'" preserveAspectRatio="xMidYMid slice"/>'
+    : '<rect width="'+size+'" height="'+size+'" fill="#1a1a2e"/>';
 
   let symEls = '';
   let symCSS = '';
   let filterDefs = '';
+
   state.syms.forEach((sym, i) => {
     if (!sym) return;
     const sp = symParams[i];
+    if (!sp) return;
     const r = symRect(sym, sp, size);
-    const sid = `${uid}_s${i}`;
+    const sid = uid + '_s' + i;
     const cx = r.cx, cy = r.cy;
+    const easing = sp.easing;
 
     let filterAttr = '';
-    if (fx.sym_glow) {
-      filterDefs += `<filter id="${sid}_glow" x="-60%" width="220%" y="-60%" height="220%">
-        <feDropShadow dx="0" dy="0" stdDeviation="${p.glowSize}" flood-color="${p.glowColor}" flood-opacity="0.9"/>
-      </filter>\n`;
-      filterAttr = `filter="url(#${sid}_glow)"`;
+    if (sp.glow) {
+      filterDefs += '<filter id="'+sid+'_glow" x="-60%" width="220%" y="-60%" height="220%">' +
+        '<feDropShadow dx="0" dy="0" stdDeviation="'+sp.glowSize+'" flood-color="'+sp.glowColor+'" flood-opacity="0.9"/>' +
+        '</filter>\n';
+      filterAttr = 'filter="url(#'+sid+'_glow)"';
     }
 
-    let inner = `<image width="${r.dw.toFixed(1)}" height="${r.dh.toFixed(1)}"
-      xlink:href="${sym.data}" preserveAspectRatio="xMidYMid meet"
-      transform="translate(${r.x.toFixed(1)} ${r.y.toFixed(1)})" ${filterAttr}/>`;
+    let inner = '<image width="'+r.dw.toFixed(1)+'" height="'+r.dh.toFixed(1)+'"' +
+      ' xlink:href="'+sym.data+'" preserveAspectRatio="xMidYMid meet"' +
+      ' transform="translate('+r.x.toFixed(1)+' '+r.y.toFixed(1)+')" '+filterAttr+'/>';
 
-    if (fx.sym_rotate) {
-      symCSS += `#${sid}_rot{animation:${sid}_rot ${dur}ms ease-in-out infinite;}
-      @keyframes ${sid}_rot{0%{transform:rotate(-4deg);}50%{transform:rotate(4deg);}100%{transform:rotate(-4deg);}}\n`;
-      inner = `<g id="${sid}_rot" style="transform-origin:${cx.toFixed(1)}px ${cy.toFixed(1)}px">${inner}</g>`;
+    if (sp.rotate) {
+      symCSS += '#'+sid+'_rot{animation:'+sid+'_rot '+dur+'ms ease-in-out infinite;}' +
+      '@keyframes '+sid+'_rot{0%{transform:rotate(-4deg);}50%{transform:rotate(4deg);}100%{transform:rotate(-4deg);}}\n';
+      inner = '<g id="'+sid+'_rot" style="transform-origin:'+cx.toFixed(1)+'px '+cy.toFixed(1)+'px">'+inner+'</g>';
     }
-    if (fx.sym_flash) {
-      symCSS += `#${sid}_fl{animation:${sid}_fl ${dur}ms linear infinite;}
-      @keyframes ${sid}_fl{0%{filter:brightness(100%);}33%{filter:brightness(100%);}50%{filter:brightness(${p.flash}%);}72%{filter:brightness(115%);}100%{filter:brightness(100%);}}\n`;
-      inner = `<g id="${sid}_fl" transform="translate(-${cx.toFixed(1)},-${cy.toFixed(1)})">${inner}</g>`;
+    if (sp.flash) {
+      symCSS += '#'+sid+'_fl{animation:'+sid+'_fl '+dur+'ms linear infinite;}' +
+      '@keyframes '+sid+'_fl{0%{filter:brightness(100%);}33%{filter:brightness(100%);}50%{filter:brightness('+sp.flashBrightness+'%);}72%{filter:brightness(115%);}100%{filter:brightness(100%);}}\n';
+      inner = '<g id="'+sid+'_fl" transform="translate(-'+cx.toFixed(1)+',-'+cy.toFixed(1)+')">'+inner+'</g>';
     }
-    if (fx.sym_scale) {
-      symCSS += `#${sid}_ts{animation:${sid}_ts ${dur}ms ${easing} infinite;}
-      @keyframes ${sid}_ts{0%{transform:translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px) scale(1,1);}27%{transform:translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px) scale(${p.scale},${p.scale});}33%{transform:translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px) scale(1,1);}100%{transform:translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px) scale(1,1);}}\n`;
-      inner = `<g id="${sid}_ts">${inner}</g>`;
+    if (sp.scale) {
+      const scaleVal = (sp.scalePeak/100).toFixed(3);
+      symCSS += '#'+sid+'_ts{animation:'+sid+'_ts '+dur+'ms '+easing+' infinite;}' +
+      '@keyframes '+sid+'_ts{0%{transform:translate('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px) scale(1,1);}27%{transform:translate('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px) scale('+scaleVal+','+scaleVal+');}33%{transform:translate('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px) scale(1,1);}100%{transform:translate('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px) scale(1,1);}}\n';
+      inner = '<g id="'+sid+'_ts">'+inner+'</g>';
     }
 
-    // --- ENTRANCE ---
-    const etype = p.entranceType;
-    const edur = p.entrDur;
+    // ENTRANCE
+    const etype = sp.entranceType;
+    const edur = sp.entrDur;
     const totalDur = parseFloat(dur);
     const entrPct = Math.min((edur / totalDur * 100), 95).toFixed(2);
     const bouncePct = Math.min(parseFloat(entrPct) + 6, 99).toFixed(2);
@@ -654,37 +747,37 @@ function buildSVG() {
     if (etype && etype !== 'none') {
       if (etype === 'slideBottom' || etype === 'slideTop') {
         const offY = etype === 'slideBottom' ? size * 1.4 : -size * 1.4;
-        symCSS += `#${sid}_entr{animation:${sid}_entr ${totalDur}ms ${easing} infinite;}@keyframes ${sid}_entr{0%{transform:translateY(${offY.toFixed(1)}px);}${entrPct}%{transform:translateY(0px);}100%{transform:translateY(0px);}}\n`;
-        inner = `<g id="${sid}_entr" style="transform-origin:${cx.toFixed(1)}px ${cy.toFixed(1)}px">${inner}</g>`;
+        symCSS += '#'+sid+'_entr{animation:'+sid+'_entr '+totalDur+'ms '+easing+' infinite;}@keyframes '+sid+'_entr{0%{transform:translateY('+offY.toFixed(1)+'px);}'+entrPct+'%{transform:translateY(0px);}100%{transform:translateY(0px);}}\n';
+        inner = '<g id="'+sid+'_entr" style="transform-origin:'+cx.toFixed(1)+'px '+cy.toFixed(1)+'px">'+inner+'</g>';
       } else if (etype === 'slideLeft' || etype === 'slideRight') {
         const offX = etype === 'slideLeft' ? -size * 1.4 : size * 1.4;
-        symCSS += `#${sid}_entr{animation:${sid}_entr ${totalDur}ms ${easing} infinite;}@keyframes ${sid}_entr{0%{transform:translateX(${offX.toFixed(1)}px);}${entrPct}%{transform:translateX(0px);}100%{transform:translateX(0px);}}\n`;
-        inner = `<g id="${sid}_entr" style="transform-origin:${cx.toFixed(1)}px ${cy.toFixed(1)}px">${inner}</g>`;
+        symCSS += '#'+sid+'_entr{animation:'+sid+'_entr '+totalDur+'ms '+easing+' infinite;}@keyframes '+sid+'_entr{0%{transform:translateX('+offX.toFixed(1)+'px);}'+entrPct+'%{transform:translateX(0px);}100%{transform:translateX(0px);}}\n';
+        inner = '<g id="'+sid+'_entr" style="transform-origin:'+cx.toFixed(1)+'px '+cy.toFixed(1)+'px">'+inner+'</g>';
       } else if (etype === 'scaleIn' || etype === 'dropBounce') {
         const bScale = etype === 'dropBounce' ? '1.1,1.1' : '1.05,1.05';
-        symCSS += `#${sid}_entr{animation:${sid}_entr ${totalDur}ms ${easing} infinite;}@keyframes ${sid}_entr{0%{transform:translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px) scale(0,0);}${entrPct}%{transform:translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px) scale(${bScale});}${bouncePct}%{transform:translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px) scale(1,1);}100%{transform:translate(${cx.toFixed(1)}px,${cy.toFixed(1)}px) scale(1,1);}}\n`;
-        inner = `<g id="${sid}_entr">${inner}</g>`;
+        symCSS += '#'+sid+'_entr{animation:'+sid+'_entr '+totalDur+'ms '+easing+' infinite;}@keyframes '+sid+'_entr{0%{transform:translate('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px) scale(0,0);}'+entrPct+'%{transform:translate('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px) scale('+bScale+');}'+bouncePct+'%{transform:translate('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px) scale(1,1);}100%{transform:translate('+cx.toFixed(1)+'px,'+cy.toFixed(1)+'px) scale(1,1);}}\n';
+        inner = '<g id="'+sid+'_entr">'+inner+'</g>';
       } else if (etype === 'rotateCW' || etype === 'rotateCCW' || etype === 'spinFade') {
         const deg = etype === 'rotateCCW' ? 180 : -180;
-        symCSS += `#${sid}_entr{animation:${sid}_entr ${totalDur}ms ${easing} infinite;}@keyframes ${sid}_entr{0%{transform:rotate(${deg}deg);}${entrPct}%{transform:rotate(0deg);}100%{transform:rotate(0deg);}}\n`;
-        inner = `<g id="${sid}_entr" style="transform-origin:${cx.toFixed(1)}px ${cy.toFixed(1)}px">${inner}</g>`;
+        symCSS += '#'+sid+'_entr{animation:'+sid+'_entr '+totalDur+'ms '+easing+' infinite;}@keyframes '+sid+'_entr{0%{transform:rotate('+deg+'deg);}'+entrPct+'%{transform:rotate(0deg);}100%{transform:rotate(0deg);}}\n';
+        inner = '<g id="'+sid+'_entr" style="transform-origin:'+cx.toFixed(1)+'px '+cy.toFixed(1)+'px">'+inner+'</g>';
       }
       if (etype === 'fade' || etype === 'spinFade') {
-        symCSS += `#${sid}_fade{animation:${sid}_fade ${totalDur}ms linear infinite;}@keyframes ${sid}_fade{0%{opacity:0;}${entrPct}%{opacity:1;}100%{opacity:1;}}\n`;
-        inner = `<g id="${sid}_fade">${inner}</g>`;
+        symCSS += '#'+sid+'_fade{animation:'+sid+'_fade '+totalDur+'ms linear infinite;}@keyframes '+sid+'_fade{0%{opacity:0;}'+entrPct+'%{opacity:1;}100%{opacity:1;}}\n';
+        inner = '<g id="'+sid+'_fade">'+inner+'</g>';
       }
     }
 
-    // --- LOOP ---
-    if (fx.loop_float) {
+    // LOOP
+    if (sp.loopFloat) {
       const fa = (size * 0.025).toFixed(1);
-      symCSS += `#${sid}_float{animation:${sid}_float ${(totalDur*0.8).toFixed(0)}ms ease-in-out infinite;}@keyframes ${sid}_float{0%{transform:translateY(0);}50%{transform:translateY(-${fa}px);}100%{transform:translateY(0);}}\n`;
-      inner = `<g id="${sid}_float">${inner}</g>`;
+      symCSS += '#'+sid+'_float{animation:'+sid+'_float '+(totalDur*0.8).toFixed(0)+'ms ease-in-out infinite;}@keyframes '+sid+'_float{0%{transform:translateY(0);}50%{transform:translateY(-'+fa+'px);}100%{transform:translateY(0);}}\n';
+      inner = '<g id="'+sid+'_float">'+inner+'</g>';
     }
-    if (fx.loop_spin) {
-      const sd = p.spinDir > 0 ? 1 : -1;
-      symCSS += `#${sid}_spin{animation:${sid}_spin ${p.spinDur}ms linear infinite;}@keyframes ${sid}_spin{0%{transform:rotate(0deg);}100%{transform:rotate(${sd*360}deg);}}\n`;
-      inner = `<g id="${sid}_spin" style="transform-origin:${cx.toFixed(1)}px ${cy.toFixed(1)}px">${inner}</g>`;
+    if (sp.loopSpin) {
+      const sd = sp.spinDir > 0 ? 1 : -1;
+      symCSS += '#'+sid+'_spin{animation:'+sid+'_spin '+sp.spinDur+'ms linear infinite;}@keyframes '+sid+'_spin{0%{transform:rotate(0deg);}100%{transform:rotate('+(sd*360)+'deg);}}\n';
+      inner = '<g id="'+sid+'_spin" style="transform-origin:'+cx.toFixed(1)+'px '+cy.toFixed(1)+'px">'+inner+'</g>';
     }
 
     symEls += inner + '\n';
@@ -693,22 +786,22 @@ function buildSVG() {
   let vigEl = '';
   if (fx.vig_on) {
     const rgb = hexRgb(p.vigColor);
-    filterDefs += `<radialGradient id="${uid}_vig" cx="50%" cy="50%" r="75%">
-      <stop offset="30%" stop-color="rgba(${rgb},0)"/>
-      <stop offset="100%" stop-color="rgba(${rgb},${p.vigInt})"/>
-    </radialGradient>`;
-    vigEl = `<rect width="${size}" height="${size}" fill="url(#${uid}_vig)">${fx.vig_pulse?`<animate attributeName="opacity" values="${p.vigInt};${(p.vigInt*0.5).toFixed(2)};${p.vigInt}" dur="${dur}ms" repeatCount="indefinite"/>`:''}
-    </rect>`;
+    filterDefs += '<radialGradient id="'+uid+'_vig" cx="50%" cy="50%" r="75%">' +
+      '<stop offset="30%" stop-color="rgba('+rgb+',0)"/>' +
+      '<stop offset="100%" stop-color="rgba('+rgb+','+p.vigInt+')"/>' +
+      '</radialGradient>';
+    vigEl = '<rect width="'+size+'" height="'+size+'" fill="url(#'+uid+'_vig)">'+(fx.vig_pulse?'<animate attributeName="opacity" values="'+p.vigInt+';'+(p.vigInt*0.5).toFixed(2)+';'+p.vigInt+'" dur="'+dur+'ms" repeatCount="indefinite"/>':'') +
+    '</rect>';
   }
 
   let partEl = '';
   if (fx.part_on) {
-    partEl = `<g id="${uid}_parts">`;
+    partEl = '<g id="'+uid+'_parts">';
     for (let i = 0; i < p.partCount; i++) {
       const seed = i * 137.508;
       const px = ((Math.sin(seed)*0.5+0.5)*size*0.85 + size*0.075).toFixed(1);
       const py = ((Math.cos(seed*0.7)*0.5+0.5)*size*0.85 + size*0.075).toFixed(1);
-      const r = p.partSize;
+      const r2 = p.partSize;
       const d = (parseFloat(dur) * (0.8 + (i%4)*0.15)).toFixed(0);
       const delay = (-(i*400)).toFixed(0);
       const rgb = hexRgb(p.partColor);
@@ -718,55 +811,51 @@ function buildSVG() {
       if (p.partStyle === 'custom' && state.customParticle) {
         const cp = state.customParticle;
         const aspect = cp.w / cp.h;
-        const pw = r * 2 * (aspect >= 1 ? 1 : aspect);
-        const ph = r * 2 * (aspect >= 1 ? 1/aspect : 1);
-        // optional tint filter
+        const pw = r2 * 2 * (aspect >= 1 ? 1 : aspect);
+        const ph = r2 * 2 * (aspect >= 1 ? 1/aspect : 1);
         let tintAttr = '';
         if (p.customPartTint) {
           const partFilterId = uid + '_pf' + i;
-          // We'll add filter inline — feColorMatrix to tint
-          shape = `<defs><filter id="${partFilterId}"><feFlood flood-color="rgba(${rgb},1)" result="color"/><feComposite in="color" in2="SourceGraphic" operator="in"/></filter></defs>` +
-            `<image href="${cp.data}" x="${(-pw/2).toFixed(1)}" y="${(-ph/2).toFixed(1)}" width="${pw.toFixed(1)}" height="${ph.toFixed(1)}" preserveAspectRatio="xMidYMid meet" filter="url(#${partFilterId})"/>`;
+          shape = '<defs><filter id="'+partFilterId+'"><feFlood flood-color="rgba('+rgb+',1)" result="color"/><feComposite in="color" in2="SourceGraphic" operator="in"/></filter></defs>' +
+            '<image href="'+cp.data+'" x="'+(-pw/2).toFixed(1)+'" y="'+(-ph/2).toFixed(1)+'" width="'+pw.toFixed(1)+'" height="'+ph.toFixed(1)+'" preserveAspectRatio="xMidYMid meet" filter="url(#'+partFilterId+')"/>';
         } else {
-          shape = `<image href="${cp.data}" x="${(-pw/2).toFixed(1)}" y="${(-ph/2).toFixed(1)}" width="${pw.toFixed(1)}" height="${ph.toFixed(1)}" preserveAspectRatio="xMidYMid meet"/>`;
+          shape = '<image href="'+cp.data+'" x="'+(-pw/2).toFixed(1)+'" y="'+(-ph/2).toFixed(1)+'" width="'+pw.toFixed(1)+'" height="'+ph.toFixed(1)+'" preserveAspectRatio="xMidYMid meet"/>';
         }
       } else if (p.partStyle === 'circle') {
-        shape = `<circle cx="0" cy="0" r="${r}" fill="rgba(${rgb},0.85)"/>`;
+        shape = '<circle cx="0" cy="0" r="'+r2+'" fill="rgba('+rgb+',0.85)"/>';
       } else if (p.partStyle === 'star') {
-        const sp = (n,R,r2,cx,cy) => { let d=''; for(let i=0;i<n*2;i++){const a=Math.PI/n*i-Math.PI/2;const ra=i%2===0?R:r2;d+=`${i===0?'M':'L'}${(cx+ra*Math.cos(a)).toFixed(2)},${(cy+ra*Math.sin(a)).toFixed(2)}`;}return d+'Z';};
-        shape = `<path d="${sp(5,r,r*0.45,0,0)}" fill="rgba(${rgb},0.85)"/>`;
+        const sp2 = (n,R,r3,cx2,cy2) => { let d2=''; for(let j=0;j<n*2;j++){const a=Math.PI/n*j-Math.PI/2;const ra=j%2===0?R:r3;d2+=(j===0?'M':'L')+(cx2+ra*Math.cos(a)).toFixed(2)+','+(cy2+ra*Math.sin(a)).toFixed(2);}return d2+'Z';};
+        shape = '<path d="'+sp2(5,r2,r2*0.45,0,0)+'" fill="rgba('+rgb+',0.85)"/>';
       } else if (p.partStyle === 'cross') {
-        shape = `<line x1="0" y1="${-r*1.8}" x2="0" y2="${r*1.8}" stroke="rgba(${rgb},0.85)" stroke-width="1.5"/><line x1="${-r*1.8}" y1="0" x2="${r*1.8}" y2="0" stroke="rgba(${rgb},0.85)" stroke-width="1.5"/><line x1="${-r*1.3}" y1="${-r*1.3}" x2="${r*1.3}" y2="${r*1.3}" stroke="rgba(${rgb},0.85)" stroke-width="1.5"/><line x1="${r*1.3}" y1="${-r*1.3}" x2="${-r*1.3}" y2="${r*1.3}" stroke="rgba(${rgb},0.85)" stroke-width="1.5"/>`;
+        shape = '<line x1="0" y1="'+(-r2*1.8)+'" x2="0" y2="'+(r2*1.8)+'" stroke="rgba('+rgb+',0.85)" stroke-width="1.5"/><line x1="'+(-r2*1.8)+'" y1="0" x2="'+(r2*1.8)+'" y2="0" stroke="rgba('+rgb+',0.85)" stroke-width="1.5"/><line x1="'+(-r2*1.3)+'" y1="'+(-r2*1.3)+'" x2="'+(r2*1.3)+'" y2="'+(r2*1.3)+'" stroke="rgba('+rgb+',0.85)" stroke-width="1.5"/><line x1="'+(r2*1.3)+'" y1="'+(-r2*1.3)+'" x2="'+(-r2*1.3)+'" y2="'+(r2*1.3)+'" stroke="rgba('+rgb+',0.85)" stroke-width="1.5"/>';
       } else if (p.partStyle === 'diamond' || p.partStyle === 'diamondsuit') {
-        shape = `<polygon points="0,${-r*1.5} ${r*1.1},0 0,${r*1.5} ${-r*1.1},0" fill="rgba(${rgb},0.85)"/>`;
+        shape = '<polygon points="0,'+(-r2*1.5)+' '+(r2*1.1)+',0 0,'+(r2*1.5)+' '+(-r2*1.1)+',0" fill="rgba('+rgb+',0.85)"/>';
       } else if (p.partStyle === 'heart') {
-        const hs = r;
-        shape = `<path d="M0,${(hs*1.1).toFixed(2)} C${(-hs*0.15).toFixed(2)},${(hs*0.4).toFixed(2)} ${(-hs*1.3).toFixed(2)},${(hs*0.4).toFixed(2)} ${(-hs*1.3).toFixed(2)},${(-hs*0.3).toFixed(2)} C${(-hs*1.3).toFixed(2)},${(-hs*1.3).toFixed(2)} 0,${(-hs*0.9).toFixed(2)} 0,${(hs*0.2).toFixed(2)} C0,${(-hs*0.9).toFixed(2)} ${(hs*1.3).toFixed(2)},${(-hs*1.3).toFixed(2)} ${(hs*1.3).toFixed(2)},${(-hs*0.3).toFixed(2)} C${(hs*1.3).toFixed(2)},${(hs*0.4).toFixed(2)} ${(hs*0.15).toFixed(2)},${(hs*0.4).toFixed(2)} 0,${(hs*1.1).toFixed(2)}Z" fill="rgba(${rgb},0.85)"/>`;
+        const hs = r2;
+        shape = '<path d="M0,'+(hs*1.1).toFixed(2)+' C'+(-hs*0.15).toFixed(2)+','+(hs*0.4).toFixed(2)+' '+(-hs*1.3).toFixed(2)+','+(hs*0.4).toFixed(2)+' '+(-hs*1.3).toFixed(2)+','+(-hs*0.3).toFixed(2)+' C'+(-hs*1.3).toFixed(2)+','+(-hs*1.3).toFixed(2)+' 0,'+(-hs*0.9).toFixed(2)+' 0,'+(hs*0.2).toFixed(2)+' C0,'+(-hs*0.9).toFixed(2)+' '+(hs*1.3).toFixed(2)+','+(-hs*1.3).toFixed(2)+' '+(hs*1.3).toFixed(2)+','+(-hs*0.3).toFixed(2)+' C'+(hs*1.3).toFixed(2)+','+(hs*0.4).toFixed(2)+' '+(hs*0.15).toFixed(2)+','+(hs*0.4).toFixed(2)+' 0,'+(hs*1.1).toFixed(2)+'Z" fill="rgba('+rgb+',0.85)"/>';
       } else if (p.partStyle === 'spade') {
-        const s = r;
-        shape = `<path d="M0,${(-s*1.4).toFixed(2)} C${(-s*1.4).toFixed(2)},${(-s*0.2).toFixed(2)} ${(-s*1.6).toFixed(2)},${(s*1.0).toFixed(2)} 0,${(s*0.6).toFixed(2)} C${(s*1.6).toFixed(2)},${(s*1.0).toFixed(2)} ${(s*1.4).toFixed(2)},${(-s*0.2).toFixed(2)} 0,${(-s*1.4).toFixed(2)}Z M${(-s*0.6).toFixed(2)},${(s*1.2).toFixed(2)} L${(s*0.6).toFixed(2)},${(s*1.2).toFixed(2)} L${(s*0.3).toFixed(2)},${(s*1.5).toFixed(2)} L${(-s*0.3).toFixed(2)},${(s*1.5).toFixed(2)}Z" fill="rgba(${rgb},0.85)"/>`;
+        const s = r2;
+        shape = '<path d="M0,'+(-s*1.4).toFixed(2)+' C'+(-s*1.4).toFixed(2)+','+(-s*0.2).toFixed(2)+' '+(-s*1.6).toFixed(2)+','+(s*1.0).toFixed(2)+' 0,'+(s*0.6).toFixed(2)+' C'+(s*1.6).toFixed(2)+','+(s*1.0).toFixed(2)+' '+(s*1.4).toFixed(2)+','+(-s*0.2).toFixed(2)+' 0,'+(-s*1.4).toFixed(2)+'Z M'+(-s*0.6).toFixed(2)+','+(s*1.2).toFixed(2)+' L'+(s*0.6).toFixed(2)+','+(s*1.2).toFixed(2)+' L'+(s*0.3).toFixed(2)+','+(s*1.5).toFixed(2)+' L'+(-s*0.3).toFixed(2)+','+(s*1.5).toFixed(2)+'Z" fill="rgba('+rgb+',0.85)"/>';
       } else if (p.partStyle === 'club') {
-        const c2 = r * 0.65;
-        shape = `<circle cx="0" cy="${(-r*0.55).toFixed(2)}" r="${c2.toFixed(2)}" fill="rgba(${rgb},0.85)"/><circle cx="${(-r*0.72).toFixed(2)}" cy="${(r*0.35).toFixed(2)}" r="${c2.toFixed(2)}" fill="rgba(${rgb},0.85)"/><circle cx="${(r*0.72).toFixed(2)}" cy="${(r*0.35).toFixed(2)}" r="${c2.toFixed(2)}" fill="rgba(${rgb},0.85)"/><rect x="${(-r*0.22).toFixed(2)}" y="${(r*0.55).toFixed(2)}" width="${(r*0.44).toFixed(2)}" height="${(r*0.85).toFixed(2)}" rx="2" fill="rgba(${rgb},0.85)"/><rect x="${(-r*0.55).toFixed(2)}" y="${(r*1.3).toFixed(2)}" width="${(r*1.1).toFixed(2)}" height="${(r*0.28).toFixed(2)}" rx="2" fill="rgba(${rgb},0.85)"/>`;
+        const c2 = r2 * 0.65;
+        shape = '<circle cx="0" cy="'+(-r2*0.55).toFixed(2)+'" r="'+c2.toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><circle cx="'+(-r2*0.72).toFixed(2)+'" cy="'+(r2*0.35).toFixed(2)+'" r="'+c2.toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><circle cx="'+(r2*0.72).toFixed(2)+'" cy="'+(r2*0.35).toFixed(2)+'" r="'+c2.toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><rect x="'+(-r2*0.22).toFixed(2)+'" y="'+(r2*0.55).toFixed(2)+'" width="'+(r2*0.44).toFixed(2)+'" height="'+(r2*0.85).toFixed(2)+'" rx="2" fill="rgba('+rgb+',0.85)"/><rect x="'+(-r2*0.55).toFixed(2)+'" y="'+(r2*1.3).toFixed(2)+'" width="'+(r2*1.1).toFixed(2)+'" height="'+(r2*0.28).toFixed(2)+'" rx="2" fill="rgba('+rgb+',0.85)"/>';
       } else if (p.partStyle === 'coin') {
-        shape = `<circle cx="0" cy="0" r="${(r*1.3).toFixed(2)}" fill="rgba(${rgb},0.85)"/><circle cx="0" cy="0" r="${(r*0.85).toFixed(2)}" fill="rgba(${rgb},0.4)"/><text x="0" y="${(r*0.4).toFixed(2)}" text-anchor="middle" font-size="${(r*1.1).toFixed(1)}" font-weight="bold" font-family="serif" fill="rgba(${rgb},1)">$</text>`;
+        shape = '<circle cx="0" cy="0" r="'+(r2*1.3).toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><circle cx="0" cy="0" r="'+(r2*0.85).toFixed(2)+'" fill="rgba('+rgb+',0.4)"/><text x="0" y="'+(r2*0.4).toFixed(2)+'" text-anchor="middle" font-size="'+(r2*1.1).toFixed(1)+'" font-weight="bold" font-family="serif" fill="rgba('+rgb+',1)">$</text>';
       } else if (p.partStyle === 'dice') {
-        const ds = r * 1.3;
-        shape = `<rect x="${-ds}" y="${-ds}" width="${ds*2}" height="${ds*2}" rx="${(ds*0.3).toFixed(1)}" fill="rgba(${rgb},0.85)"/><circle cx="${(-ds*0.45).toFixed(2)}" cy="${(-ds*0.45).toFixed(2)}" r="${(ds*0.18).toFixed(2)}" fill="rgba(0,0,0,0.5)"/><circle cx="${(ds*0.45).toFixed(2)}" cy="${(-ds*0.45).toFixed(2)}" r="${(ds*0.18).toFixed(2)}" fill="rgba(0,0,0,0.5)"/><circle cx="0" cy="0" r="${(ds*0.18).toFixed(2)}" fill="rgba(0,0,0,0.5)"/><circle cx="${(-ds*0.45).toFixed(2)}" cy="${(ds*0.45).toFixed(2)}" r="${(ds*0.18).toFixed(2)}" fill="rgba(0,0,0,0.5)"/><circle cx="${(ds*0.45).toFixed(2)}" cy="${(ds*0.45).toFixed(2)}" r="${(ds*0.18).toFixed(2)}" fill="rgba(0,0,0,0.5)"/>`;
+        const ds = r2 * 1.3;
+        shape = '<rect x="'+(-ds)+'" y="'+(-ds)+'" width="'+(ds*2)+'" height="'+(ds*2)+'" rx="'+(ds*0.3).toFixed(1)+'" fill="rgba('+rgb+',0.85)"/><circle cx="'+(-ds*0.45).toFixed(2)+'" cy="'+(-ds*0.45).toFixed(2)+'" r="'+(ds*0.18).toFixed(2)+'" fill="rgba(0,0,0,0.5)"/><circle cx="'+(ds*0.45).toFixed(2)+'" cy="'+(-ds*0.45).toFixed(2)+'" r="'+(ds*0.18).toFixed(2)+'" fill="rgba(0,0,0,0.5)"/><circle cx="0" cy="0" r="'+(ds*0.18).toFixed(2)+'" fill="rgba(0,0,0,0.5)"/><circle cx="'+(-ds*0.45).toFixed(2)+'" cy="'+(ds*0.45).toFixed(2)+'" r="'+(ds*0.18).toFixed(2)+'" fill="rgba(0,0,0,0.5)"/><circle cx="'+(ds*0.45).toFixed(2)+'" cy="'+(ds*0.45).toFixed(2)+'" r="'+(ds*0.18).toFixed(2)+'" fill="rgba(0,0,0,0.5)"/>';
       } else if (p.partStyle === 'seven') {
-        shape = `<text x="0" y="${(r*0.55).toFixed(2)}" text-anchor="middle" font-size="${(r*2.2).toFixed(1)}" font-weight="900" font-family="serif" fill="rgba(${rgb},0.95)">7</text>`;
+        shape = '<text x="0" y="'+(r2*0.55).toFixed(2)+'" text-anchor="middle" font-size="'+(r2*2.2).toFixed(1)+'" font-weight="900" font-family="serif" fill="rgba('+rgb+',0.95)">7</text>';
       } else if (p.partStyle === 'clover') {
-        const cl = r * 0.7;
-        shape = `<circle cx="0" cy="${(-cl*1.0).toFixed(2)}" r="${cl.toFixed(2)}" fill="rgba(${rgb},0.85)"/><circle cx="${(cl*1.0).toFixed(2)}" cy="0" r="${cl.toFixed(2)}" fill="rgba(${rgb},0.85)"/><circle cx="0" cy="${(cl*1.0).toFixed(2)}" r="${cl.toFixed(2)}" fill="rgba(${rgb},0.85)"/><circle cx="${(-cl*1.0).toFixed(2)}" cy="0" r="${cl.toFixed(2)}" fill="rgba(${rgb},0.85)"/><circle cx="0" cy="0" r="${(cl*0.55).toFixed(2)}" fill="rgba(${rgb},0.85)"/><rect x="${(-cl*0.22).toFixed(2)}" y="${(cl*0.8).toFixed(2)}" width="${(cl*0.44).toFixed(2)}" height="${(cl*0.9).toFixed(2)}" fill="rgba(${rgb},0.85)"/>`;
-      } else if (p.partStyle === 'triangle') {
-        shape = `<polygon points="0,${-r*1.5} ${r*1.3},${r*0.9} ${-r*1.3},${r*0.9}" fill="rgba(${rgb},0.85)"/>`;
+        const cl = r2 * 0.7;
+        shape = '<circle cx="0" cy="'+(-cl*1.0).toFixed(2)+'" r="'+cl.toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><circle cx="'+(cl*1.0).toFixed(2)+'" cy="0" r="'+cl.toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><circle cx="0" cy="'+(cl*1.0).toFixed(2)+'" r="'+cl.toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><circle cx="'+(-cl*1.0).toFixed(2)+'" cy="0" r="'+cl.toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><circle cx="0" cy="0" r="'+(cl*0.55).toFixed(2)+'" fill="rgba('+rgb+',0.85)"/><rect x="'+(-cl*0.22).toFixed(2)+'" y="'+(cl*0.8).toFixed(2)+'" width="'+(cl*0.44).toFixed(2)+'" height="'+(cl*0.9).toFixed(2)+'" fill="rgba('+rgb+',0.85)"/>';
       } else {
-        shape = `<circle cx="0" cy="0" r="${r}" fill="rgba(${rgb},0.85)"/>`;
+        shape = '<circle cx="0" cy="0" r="'+r2+'" fill="rgba('+rgb+',0.85)"/>';
       }
-      partEl += `<g transform="translate(${px},${py})">${shape}
-        <animateTransform attributeName="transform" type="translate" values="${px},${py};${tx},${ty};${px},${py}" dur="${d}ms" begin="${delay}ms" repeatCount="indefinite" additive="replace"/>
-        <animate attributeName="opacity" values="0;1;0.6;0" dur="${d}ms" begin="${delay}ms" repeatCount="indefinite"/>
-      </g>\n`;
+      partEl += '<g transform="translate('+px+','+py+')">'+shape+
+        '<animateTransform attributeName="transform" type="translate" values="'+px+','+py+';'+tx+','+ty+';'+px+','+py+'" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite" additive="replace"/>' +
+        '<animate attributeName="opacity" values="0;1;0.6;0" dur="'+d+'ms" begin="'+delay+'ms" repeatCount="indefinite"/>' +
+      '</g>\n';
     }
     partEl += '</g>';
   }
@@ -775,38 +864,32 @@ function buildSVG() {
   if (fx.flash_on) {
     const rgb = hexRgb(p.flashColor);
     const op = p.flashOpacity;
-    const timings = {sync:`0;0;0;${op};0;0`,offset:`0;0;0;0;${op};0`,double:`0;${(op*0.5).toFixed(2)};0;${op};0;0`,slow:`0;${(op*0.3).toFixed(2)};0;${(op*0.1).toFixed(2)};${op};0`};
-    flashEl = `<rect width="${size}" height="${size}" fill="rgb(${rgb})" opacity="0">
-      <animate attributeName="opacity" values="${timings[p.flashTiming]}" dur="${dur}ms" repeatCount="indefinite"/>
-    </rect>`;
+    const timings = {sync:'0;0;0;'+op+';0;0',offset:'0;0;0;0;'+op+';0',double:'0;'+(op*0.5).toFixed(2)+';0;'+op+';0;0',slow:'0;'+(op*0.3).toFixed(2)+';0;'+(op*0.1).toFixed(2)+';'+op+';0'};
+    flashEl = '<rect width="'+size+'" height="'+size+'" fill="rgb('+rgb+')" opacity="0">' +
+      '<animate attributeName="opacity" values="'+(timings[p.flashTiming])+'" dur="'+dur+'ms" repeatCount="indefinite"/>' +
+    '</rect>';
   }
 
-  return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-  viewBox="0 0 ${size} ${size}" width="${size}" height="${size}" shape-rendering="geometricPrecision">
-<style>${symCSS}</style>
-<defs>${filterDefs}</defs>
-${bgEl}
-${vigEl}
-${symEls}
-${partEl}
-${flashEl}
-</svg>`;
+  return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"' +
+  ' viewBox="0 0 '+size+' '+size+'" width="'+size+'" height="'+size+'" shape-rendering="geometricPrecision">' +
+  '<style>'+symCSS+'</style>' +
+  '<defs>'+filterDefs+'</defs>' +
+  bgEl + vigEl + symEls + partEl + flashEl +
+  '</svg>';
 }
 
 function rebuild() {
   const svg = buildSVG();
   const size = parseInt(document.getElementById('canvasSize').value);
   const wrap = document.getElementById('livePreview');
-  // Replace fixed width/height with 100% so SVG fills the container,
-  // keeping viewBox so it scales correctly without clipping
   wrap.innerHTML = svg.replace(
-    `width="${size}" height="${size}"`,
-    `width="100%" height="100%" style="display:block;position:absolute;top:0;left:0"`
+    'width="'+size+'" height="'+size+'"',
+    'width="100%" height="100%" style="display:block;position:absolute;top:0;left:0"'
   );
   document.getElementById('exportBtn').disabled = false;
   if (symParams[state.activeSymIdx]) {
     const sp = symParams[state.activeSymIdx];
-    document.getElementById('coordsBadge').textContent = `x:${sp.x}% y:${sp.y}%`;
+    document.getElementById('coordsBadge').textContent = 'x:'+sp.x+'% y:'+sp.y+'%';
   }
 }
 
@@ -814,7 +897,8 @@ function exportSVG() {
   const svg = buildSVG();
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
-  const fn = (document.getElementById('filename').value.trim() || 'animated').replace(/\.svg$/i,''); a.download = fn + '.svg'; a.click();
+  const fn = (document.getElementById('filename').value.trim() || 'animated').replace(/\.svg$/i,'');
+  a.download = fn + '.svg'; a.click();
 }
 
 function exportPNG() {
@@ -825,7 +909,8 @@ function exportPNG() {
   img.onload = () => {
     const c = document.createElement('canvas'); c.width=p.size; c.height=p.size;
     c.getContext('2d').drawImage(img,0,0);
-    const fn2 = (document.getElementById('filename').value.trim() || 'animated').replace(/\.png$/i,''); const a = document.createElement('a'); a.href=c.toDataURL('image/png'); a.download=fn2+'.png'; a.click();
+    const fn2 = (document.getElementById('filename').value.trim() || 'animated').replace(/\.png$/i,'');
+    const a = document.createElement('a'); a.href=c.toDataURL('image/png'); a.download=fn2+'.png'; a.click();
   };
   img.src = url;
 }
