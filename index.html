@@ -118,6 +118,14 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
 <!-- LEFT -->
 <div class="left-col">
   <div class="panel" style="margin-bottom:10px">
+    <div class="panel-title"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 9h6M9 12h6M9 15h4"/></svg></span> Import from Figma</div>
+    <div class="upload-zone" id="figmaZone" onclick="document.getElementById('figmaFileInput').click()" style="cursor:pointer">
+      <input type="file" id="figmaFileInput" accept=".svg" style="display:none" onchange="handleFigmaSVGImport(this.files[0])">
+      <div class="upload-label"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Drop Figma SVG<small>Frame → Export → SVG (no flatten)</small></div>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-bottom:10px">
     <div class="panel-title"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span> Background</div>
     <div class="upload-zone" id="bgZone">
       <input type="file" accept="image/*" onchange="loadBg(this)">
@@ -442,7 +450,7 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
 </div>
 
 <script>
-const state = { bg: null, syms: [], activeSymIdx: 0, customParticle: null };
+const state = { bg: null, syms: [], activeSymIdx: 0, customParticle: null, figmaDefs: '' };
 // Global effects (bg, flash overlay, particles, vignette)
 const fx = { bg_ken:false, bg_dim:true, flash_on:true, part_on:true, vig_on:true, vig_pulse:false };
 
@@ -1013,6 +1021,122 @@ function countActiveEffects(sp) {
   return c;
 }
 
+// ── FIGMA SVG IMPORT ──────────────────────────────────────────
+function parseFigmaSVG(svgText) {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(svgText, 'image/svg+xml');
+  const svg = doc.querySelector('svg');
+  if (!svg) return null;
+
+  // Canvas size from viewBox or width/height
+  const vb = svg.getAttribute('viewBox');
+  let cw, ch;
+  if (vb) {
+    const parts = vb.trim().split(/[\s,]+/).map(Number);
+    cw = parts[2]; ch = parts[3];
+  } else {
+    cw = parseFloat(svg.getAttribute('width')) || 375;
+    ch = parseFloat(svg.getAttribute('height')) || 375;
+  }
+
+  // Shared defs (gradients, filters, etc.)
+  const defsEl = svg.querySelector(':scope > defs');
+  let defsContent = '';
+  if (defsEl) {
+    // Serialize inner content of defs
+    defsContent = Array.from(defsEl.children).map(el => {
+      const s = new XMLSerializer();
+      return s.serializeToString(el).replace(/ xmlns(?::\w+)?="[^"]*"/g, '');
+    }).join('\n');
+  }
+
+  // Top-level layer elements (skip defs, style, title)
+  const layers = [];
+  for (const child of svg.children) {
+    const tag = child.tagName.toLowerCase();
+    if (tag === 'defs' || tag === 'style' || tag === 'title' || tag === 'desc') continue;
+    const name = child.getAttribute('id') || child.getAttribute('data-name') || ('layer_' + layers.length);
+    const s = new XMLSerializer();
+    // Serialize and strip xmlns declarations added by serializer
+    let content = s.serializeToString(child).replace(/ xmlns(?::\w+)?="[^"]*"/g, '');
+    layers.push({ name, content });
+  }
+
+  return { cw, ch, defsContent, layers };
+}
+
+function handleFigmaSVGImport(file) {
+  if (!file) return;
+  const zone = document.getElementById('figmaZone');
+  const r = new FileReader();
+  r.onload = e => {
+    const parsed = parseFigmaSVG(e.target.result);
+    if (!parsed || !parsed.layers.length) {
+      alert('Could not parse SVG — make sure you export without "Flatten" from Figma');
+      return;
+    }
+
+    // Clear existing elements
+    state.syms = [];
+    symParams.length = 0;
+
+    // Store shared defs globally for buildSVG
+    state.figmaDefs = parsed.defsContent;
+
+    // Set canvas size — add Figma size as option if needed
+    const targetSize = Math.round(Math.max(parsed.cw, parsed.ch));
+    const select = document.getElementById('canvasSize');
+    const exists = Array.from(select.options).some(o => parseInt(o.value) === targetSize);
+    if (!exists) {
+      const opt = document.createElement('option');
+      opt.value = targetSize;
+      opt.text = targetSize + '×' + Math.round(parsed.ch);
+      select.insertBefore(opt, select.firstChild);
+    }
+    select.value = targetSize;
+
+    // Create element slots for each layer
+    parsed.layers.forEach((layer, i) => {
+      state.syms[i] = {
+        data: layer.content,
+        type: 'image/svg+xml',
+        name: layer.name,
+        w: parsed.cw,
+        h: parsed.ch,
+        isSvgLayer: true
+      };
+      const sp = defaultSymAnim();
+      // Default: centered, no bounce/flash (raw Figma look)
+      sp.scale = false;
+      sp.flash = false;
+      symParams[i] = sp;
+    });
+
+    syncSymLayers();
+    renderSymSlots();
+    renderLayerList();
+    setActiveSymIdx(0);
+    if (zone) zone.classList.add('has-file');
+    rebuild();
+  };
+  r.readAsText(file);
+}
+
+// Drag & drop on Figma zone
+document.addEventListener('DOMContentLoaded', () => {
+  const zone = document.getElementById('figmaZone');
+  if (!zone) return;
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = '#5566cc'; });
+  zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.style.borderColor = '';
+    const file = e.dataTransfer.files[0];
+    if (file && file.name.endsWith('.svg')) handleFigmaSVGImport(file);
+  });
+});
+// ─────────────────────────────────────────────────────────────
+
 function renderSymSlots() {
   const container = document.getElementById('symSlots');
   container.innerHTML = '';
@@ -1026,6 +1150,14 @@ function renderSymSlots() {
       div.innerHTML = '<input type="file" accept="image/*" onchange="loadSymFile(' + i + ',this)">' +
         '<div class="sym-thumb-empty">+</div>' +
         '<div class="sym-info"><div class="sym-name">click to load</div></div>' +
+        '<div class="sym-del" onclick="deleteSym(' + i + ',event)">x</div>';
+    } else if (sym.isSvgLayer) {
+      div.innerHTML =
+        '<div class="sym-thumb" style="display:flex;align-items:center;justify-content:center;background:#0d0d18;border:1px solid #252560;color:#5566cc;font-size:9px;font-weight:bold">SVG</div>' +
+        '<div class="sym-info">' +
+          '<div class="sym-name">' + sym.name + '</div>' +
+          '<div class="sym-dims">figma layer · ' + effectCount + ' fx</div>' +
+        '</div>' +
         '<div class="sym-del" onclick="deleteSym(' + i + ',event)">x</div>';
     } else {
       div.innerHTML = '<input type="file" accept="image/*" onchange="loadSymFile(' + i + ',this)" style="z-index:1">' +
@@ -1096,14 +1228,18 @@ function buildSVG() {
 
   let symElMap = {};  // sym_0: '...', sym_1: '...'
   let symCSS = '';
-  let filterDefs = '';
+  // Collect shared defs from Figma SVG imports
+  let filterDefs = state.figmaDefs || '';
 
   state.syms.forEach((sym, i) => {
     symElMap['sym_'+i] = '';
     if (!sym) return;
     const sp = symParams[i];
     if (!sp) return;
-    const r = symRect(sym, sp, size);
+    // SVG layers use full-canvas rect; images use normal symRect
+    const r = sym.isSvgLayer
+      ? { cx: size/2, cy: size/2, x: 0, y: 0, dw: size, dh: size }
+      : symRect(sym, sp, size);
     const sid = uid + '_s' + i;
     const cx = r.cx, cy = r.cy;
     const easing = sp.easing;
@@ -1117,7 +1253,14 @@ function buildSVG() {
     }
 
     let inner;
-    if (sym.isGif) {
+    if (sym.isSvgLayer) {
+      // Figma SVG layer — embed content directly, apply optional offset from x/y sliders
+      const offsetX = (size * sp.x / 100) - size/2;
+      const offsetY = (size * sp.y / 100) - size/2;
+      const hasOffset = Math.abs(offsetX) > 0.5 || Math.abs(offsetY) > 0.5;
+      const t = hasOffset ? ' transform="translate('+offsetX.toFixed(1)+','+offsetY.toFixed(1)+')"' : '';
+      inner = '<g'+t+' '+filterAttr+'>'+sym.data+'</g>';
+    } else if (sym.isGif) {
       inner = '<foreignObject width="'+r.dw.toFixed(1)+'" height="'+r.dh.toFixed(1)+'"' +
         ' transform="translate('+r.x.toFixed(1)+' '+r.y.toFixed(1)+')" '+filterAttr+'>' +
         '<img xmlns="http://www.w3.org/1999/xhtml" src="'+sym.data+'"' +
