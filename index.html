@@ -68,7 +68,7 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
 .layer-arrows button:hover { color: #5aaa5a; }
 .layer-grip { color: #252528; font-size: 10px; cursor: grab; flex-shrink: 0; user-select: none; }
 
-.preview-wrap { position: relative; background: #080808; border: 1px solid #1a1a1e; border-radius: 8px; overflow: hidden; display: block; width: 100%; max-width: 500px; aspect-ratio: 1/1; }
+.preview-wrap { position: relative; background: #080808; border: 1px solid #1a1a1e; border-radius: 8px; overflow: hidden; display: block; aspect-ratio: var(--canvas-aspect, 1 / 1); height: min(100%, 80vh); max-width: 100%; }
 #livePreview { display: block; width: 100%; height: 100%; }
 .preview-badge { position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.7); border: 1px solid #222; border-radius: 4px; font-size: 9px; color: #444; padding: 3px 7px; }
 .live-badge { position: absolute; top: 8px; left: 8px; background: rgba(20,40,20,0.8); border: 1px solid #2a4a2a; border-radius: 4px; font-size: 9px; color: #4a8a4a; padding: 3px 7px; }
@@ -432,11 +432,11 @@ select { width: 100%; background: #18181c; border: 1px solid #252528; color: #aa
 <div class="bottom-bar">
   <div style="display:flex;align-items:center;gap:6px">
     <label style="margin:0;white-space:nowrap">Canvas</label>
-    <select id="canvasSize" onchange="rebuild()" style="width:90px">
-      <option value="375">375×375</option>
-      <option value="400">400×400</option>
-      <option value="300">300×300</option>
-      <option value="200">200×200</option>
+    <select id="canvasSize" onchange="rebuild()" style="width:110px">
+      <option value="375x375">375×375</option>
+      <option value="400x400">400×400</option>
+      <option value="300x300">300×300</option>
+      <option value="200x200">200×200</option>
     </select>
   </div>
   <div style="display:flex;align-items:center;gap:6px;min-width:160px">
@@ -474,7 +474,12 @@ function getLayerMeta(key) {
     const idx = parseInt(key.split('_')[1]);
     const sym = state.syms[idx];
     const symName = sym ? sym.name : 'Element ' + (idx + 1);
-    const thumb = sym ? '<img src="'+sym.data+'" style="width:16px;height:16px;object-fit:contain;border-radius:2px;vertical-align:middle">' : '';
+    let thumb = '';
+    if (sym && sym.isSvgLayer) {
+      thumb = '<span style="display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;background:#0d0d18;border:1px solid #252560;border-radius:2px;color:#5566cc;font-size:7px;font-weight:bold;vertical-align:middle">SVG</span>';
+    } else if (sym && sym.data) {
+      thumb = '<img src="'+sym.data+'" style="width:16px;height:16px;object-fit:contain;border-radius:2px;vertical-align:middle">';
+    }
     return { name: symName, badge: 'E'+(idx+1), icon: thumb || fxIcons.sym, panel: 'sym', symIdx: idx };
   }
   return { name: key, badge: '?', icon: '', panel: 'bg' };
@@ -1083,17 +1088,22 @@ function handleFigmaSVGImport(file) {
     // Store shared defs globally for buildSVG
     state.figmaDefs = parsed.defsContent;
 
-    // Set canvas size — add Figma size as option if needed
-    const targetSize = Math.round(Math.max(parsed.cw, parsed.ch));
+    // Set canvas size — use exact Figma W×H
+    const W = Math.round(parsed.cw);
+    const H = Math.round(parsed.ch);
+    const val = W + 'x' + H;
     const select = document.getElementById('canvasSize');
-    const exists = Array.from(select.options).some(o => parseInt(o.value) === targetSize);
+    // Remove any previously added figma-source option
+    Array.from(select.options).forEach(o => { if (o.dataset.figma === '1') o.remove(); });
+    const exists = Array.from(select.options).some(o => o.value === val);
     if (!exists) {
       const opt = document.createElement('option');
-      opt.value = targetSize;
-      opt.text = targetSize + '×' + Math.round(parsed.ch);
+      opt.value = val;
+      opt.text = W + '×' + H + ' (figma)';
+      opt.dataset.figma = '1';
       select.insertBefore(opt, select.firstChild);
     }
-    select.value = targetSize;
+    select.value = val;
 
     // Create element slots for each layer
     parsed.layers.forEach((layer, i) => {
@@ -1176,9 +1186,20 @@ document.getElementById('symX').oninput = function() { saveSymFx(); sv('symXVal'
 document.getElementById('symY').oninput = function() { saveSymFx(); sv('symYVal',this.value); document.getElementById('coordsBadge').textContent='x:'+document.getElementById('symX').value+'% y:'+this.value+'%'; rebuild(); };
 document.getElementById('symSize').oninput = function() { saveSymFx(); sv('symSizeVal',this.value); rebuild(); };
 
+function parseCanvasSize() {
+  const v = document.getElementById('canvasSize').value;
+  const m = String(v).match(/^(\d+)x(\d+)$/i);
+  if (m) return { w: parseInt(m[1]), h: parseInt(m[2]) };
+  const n = parseInt(v) || 375;
+  return { w: n, h: n };
+}
+
 function getP() {
+  const cs = parseCanvasSize();
   return {
-    size: parseInt(document.getElementById('canvasSize').value),
+    size: Math.min(cs.w, cs.h),
+    w: cs.w,
+    h: cs.h,
     dur: document.getElementById('duration').value,
     flashColor: document.getElementById('flashColor').value,
     flashOpacity: document.getElementById('flashOpacity').value/100,
@@ -1200,30 +1221,33 @@ function hexRgb(hex) {
   return parseInt(hex.slice(1,3),16)+','+parseInt(hex.slice(3,5),16)+','+parseInt(hex.slice(5,7),16);
 }
 
-function symRect(sym, sp, size) {
+function symRect(sym, sp, size, cw, ch) {
   const scalePct = sp.size / 100;
   const maxDim = size * scalePct;
   const ratio = sym.w / sym.h;
   let dw, dh;
   if (ratio >= 1) { dw = maxDim; dh = maxDim / ratio; }
   else { dh = maxDim; dw = maxDim * ratio; }
-  const cx = size * (sp.x / 100);
-  const cy = size * (sp.y / 100);
+  const W = cw != null ? cw : size;
+  const H = ch != null ? ch : size;
+  const cx = W * (sp.x / 100);
+  const cy = H * (sp.y / 100);
   return { dw, dh, cx, cy, x: cx - dw/2, y: cy - dh/2 };
 }
 
 function buildSVG() {
   const p = getP();
   const { size, dur } = p;
+  const W = p.w, H = p.h;
   const uid = 'g' + Math.random().toString(36).slice(2,8);
 
   let bgEl;
   if (!state.bg) {
-    bgEl = '<rect width="'+size+'" height="'+size+'" fill="#1a1a2e"/>';
+    bgEl = '<rect width="'+W+'" height="'+H+'" fill="#1a1a2e"/>';
   } else if (state.bg.isGif) {
-    bgEl = '<foreignObject width="'+size+'" height="'+size+'"><img xmlns="http://www.w3.org/1999/xhtml" src="'+state.bg.data+'" style="width:'+size+'px;height:'+size+'px;object-fit:cover"/></foreignObject>';
+    bgEl = '<foreignObject width="'+W+'" height="'+H+'"><img xmlns="http://www.w3.org/1999/xhtml" src="'+state.bg.data+'" style="width:'+W+'px;height:'+H+'px;object-fit:cover"/></foreignObject>';
   } else {
-    bgEl = '<image width="'+size+'" height="'+size+'" xlink:href="'+state.bg.data+'" preserveAspectRatio="xMidYMid slice"/>';
+    bgEl = '<image width="'+W+'" height="'+H+'" xlink:href="'+state.bg.data+'" preserveAspectRatio="xMidYMid slice"/>';
   }
 
   let symElMap = {};  // sym_0: '...', sym_1: '...'
@@ -1238,8 +1262,8 @@ function buildSVG() {
     if (!sp) return;
     // SVG layers use full-canvas rect; images use normal symRect
     const r = sym.isSvgLayer
-      ? { cx: size/2, cy: size/2, x: 0, y: 0, dw: size, dh: size }
-      : symRect(sym, sp, size);
+      ? { cx: W/2, cy: H/2, x: 0, y: 0, dw: W, dh: H }
+      : symRect(sym, sp, Math.min(W, H), W, H);
     const sid = uid + '_s' + i;
     const cx = r.cx, cy = r.cy;
     const easing = sp.easing;
@@ -1255,8 +1279,8 @@ function buildSVG() {
     let inner;
     if (sym.isSvgLayer) {
       // Figma SVG layer — embed content directly, apply optional offset from x/y sliders
-      const offsetX = (size * sp.x / 100) - size/2;
-      const offsetY = (size * sp.y / 100) - size/2;
+      const offsetX = (W * sp.x / 100) - W/2;
+      const offsetY = (H * sp.y / 100) - H/2;
       const hasOffset = Math.abs(offsetX) > 0.5 || Math.abs(offsetY) > 0.5;
       const t = hasOffset ? ' transform="translate('+offsetX.toFixed(1)+','+offsetY.toFixed(1)+')"' : '';
       inner = '<g'+t+' '+filterAttr+'>'+sym.data+'</g>';
@@ -1387,7 +1411,7 @@ function buildSVG() {
       '<stop offset="30%" stop-color="rgba('+rgb+',0)"/>' +
       '<stop offset="100%" stop-color="rgba('+rgb+','+p.vigInt+')"/>' +
       '</radialGradient>';
-    vigEl = '<rect width="'+size+'" height="'+size+'" fill="url(#'+uid+'_vig)">'+(fx.vig_pulse?'<animate attributeName="opacity" values="'+p.vigInt+';'+(p.vigInt*0.5).toFixed(2)+';'+p.vigInt+'" dur="'+dur+'ms" repeatCount="indefinite"/>':'') +
+    vigEl = '<rect width="'+W+'" height="'+H+'" fill="url(#'+uid+'_vig)">'+(fx.vig_pulse?'<animate attributeName="opacity" values="'+p.vigInt+';'+(p.vigInt*0.5).toFixed(2)+';'+p.vigInt+'" dur="'+dur+'ms" repeatCount="indefinite"/>':'') +
     '</rect>';
   }
 
@@ -1558,13 +1582,13 @@ function buildSVG() {
     const rgb = hexRgb(p.flashColor);
     const op = p.flashOpacity;
     const timings = {sync:'0;0;0;'+op+';0;0',offset:'0;0;0;0;'+op+';0',double:'0;'+(op*0.5).toFixed(2)+';0;'+op+';0;0',slow:'0;'+(op*0.3).toFixed(2)+';0;'+(op*0.1).toFixed(2)+';'+op+';0'};
-    flashEl = '<rect width="'+size+'" height="'+size+'" fill="rgb('+rgb+')" opacity="0">' +
+    flashEl = '<rect width="'+W+'" height="'+H+'" fill="rgb('+rgb+')" opacity="0">' +
       '<animate attributeName="opacity" values="'+(timings[p.flashTiming])+'" dur="'+dur+'ms" repeatCount="indefinite"/>' +
     '</rect>';
   }
 
   return '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"' +
-  ' viewBox="0 0 '+size+' '+size+'" width="'+size+'" height="'+size+'" shape-rendering="geometricPrecision">' +
+  ' viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'" shape-rendering="geometricPrecision">' +
   '<style>'+symCSS+'</style>' +
   '<defs>'+filterDefs+'</defs>' +
   // Assemble layers in user-defined order (sym_0, sym_1 etc. are individual elements)
@@ -1576,10 +1600,12 @@ function buildSVG() {
 
 function rebuild() {
   const svg = buildSVG();
-  const size = parseInt(document.getElementById('canvasSize').value);
+  const cs = parseCanvasSize();
   const wrap = document.getElementById('livePreview');
+  const pwrap = document.getElementById('previewWrap');
+  if (pwrap) pwrap.style.setProperty('--canvas-aspect', cs.w + ' / ' + cs.h);
   wrap.innerHTML = svg.replace(
-    'width="'+size+'" height="'+size+'"',
+    'width="'+cs.w+'" height="'+cs.h+'"',
     'width="100%" height="100%" style="display:block;position:absolute;top:0;left:0"'
   );
   document.getElementById('exportBtn').disabled = false;
@@ -1603,7 +1629,7 @@ function exportPNG() {
   const url = URL.createObjectURL(new Blob([svg],{type:'image/svg+xml'}));
   const img = new Image();
   img.onload = () => {
-    const c = document.createElement('canvas'); c.width=p.size; c.height=p.size;
+    const c = document.createElement('canvas'); c.width=p.w; c.height=p.h;
     c.getContext('2d').drawImage(img,0,0);
     const fn2 = (document.getElementById('filename').value.trim() || 'animated').replace(/\.png$/i,'');
     const a = document.createElement('a'); a.href=c.toDataURL('image/png'); a.download=fn2+'.png'; a.click();
