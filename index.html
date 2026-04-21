@@ -769,18 +769,10 @@ input[type=checkbox] { accent-color: var(--accent); }
 <!-- LEFT -->
 <div class="left-col">
   <div class="panel" style="margin-bottom:10px">
-    <div class="panel-title"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 3h14a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2z"/><path d="M9 9h6M9 12h6M9 15h4"/></svg></span><span class="panel-code">F.1</span><span class="panel-sep">/</span>Import from Figma</div>
-    <div class="upload-zone" id="figmaZone" onclick="document.getElementById('figmaFileInput').click()" style="cursor:pointer">
-      <input type="file" id="figmaFileInput" accept=".svg" style="display:none" onchange="handleFigmaSVGImport(this.files[0])">
-      <div class="upload-label"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span> Drop Figma SVG<small>Frame → Export → SVG (no flatten)</small></div>
-    </div>
-  </div>
-
-  <div class="panel" style="margin-bottom:10px">
-    <div class="panel-title"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg></span><span class="panel-code">B.1</span><span class="panel-sep">/</span>Background</div>
-    <div class="upload-zone" id="bgZone">
-      <input type="file" accept="image/*" onchange="loadBg(this)">
-      <div class="upload-label" id="bgLabel"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></span> Drop background<small>JPEG / PNG / WebP</small></div>
+    <div class="panel-title"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span><span class="panel-code">A.1</span><span class="panel-sep">/</span>Assets</div>
+    <div class="upload-zone" id="assetsZone" onclick="document.getElementById('assetsFileInput').click()" style="cursor:pointer" ondragover="event.preventDefault();this.classList.add('drag')" ondragleave="this.classList.remove('drag')" ondrop="handleUniversalDrop(event)">
+      <input type="file" id="assetsFileInput" accept=".svg,image/*" multiple style="display:none" onchange="handleUniversalFiles(this.files);this.value=''">
+      <div class="upload-label"><span class="icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg></span> Drop files or click<small>.svg → Figma layers · image → bg / element</small></div>
     </div>
   </div>
 
@@ -1621,10 +1613,8 @@ function loadBg(input) {
         fmt = type.split('/')[1].toUpperCase();
         newSize = Math.round(data.length * 3/4 / 1024);
       }
-      state.bg = { data, type, w: img.naturalWidth, h: img.naturalHeight, isGif };
-      const zone = document.getElementById('bgZone');
-      zone.classList.add('has-file');
-      document.getElementById('bgLabel').innerHTML = '<img style="width:28px;height:28px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px" src="' + data + '"> ' + file.name + ' <small style="color:#4a7a4a;display:block;margin-top:2px">' + fmt + ' · ' + newSize + 'KB' + (isGif ? '' : ' (was ' + origSize + 'KB)') + '</small>';
+      state.bg = { data, type, w: img.naturalWidth, h: img.naturalHeight, isGif, name: file.name, fmt, size: newSize };
+      renderLayerList();
       rebuild();
       if (typeof pushSnapshot === 'function') pushSnapshot();
     };
@@ -1766,7 +1756,6 @@ function parseFigmaSVG(svgText) {
 
 function handleFigmaSVGImport(file) {
   if (!file) return;
-  const zone = document.getElementById('figmaZone');
   const r = new FileReader();
   r.onload = e => {
     const parsed = parseFigmaSVG(e.target.result);
@@ -1827,19 +1816,33 @@ function handleFigmaSVGImport(file) {
   r.readAsText(file);
 }
 
-// Drag & drop on Figma zone
-document.addEventListener('DOMContentLoaded', () => {
-  const zone = document.getElementById('figmaZone');
-  if (!zone) return;
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.style.borderColor = '#5566cc'; });
-  zone.addEventListener('dragleave', () => { zone.style.borderColor = ''; });
-  zone.addEventListener('drop', e => {
-    e.preventDefault();
-    zone.style.borderColor = '';
-    const file = e.dataTransfer.files[0];
-    if (file && file.name.endsWith('.svg')) handleFigmaSVGImport(file);
-  });
-});
+// Unified file routing — .svg → Figma, image → bg (if empty) or element
+function handleUniversalFile(file) {
+  if (!file) return;
+  const isSvg = file.name.toLowerCase().endsWith('.svg') || file.type === 'image/svg+xml';
+  if (isSvg) { handleFigmaSVGImport(file); return; }
+  if (!file.type.startsWith('image/')) return;
+  if (!state.bg) {
+    loadBg({ files: [file] });
+  } else {
+    const idx = state.syms.length;
+    state.syms.push(null);
+    symParams.push(defaultSymAnim());
+    renderSymSlots();
+    renderLayerList();
+    loadSymFile(idx, { files: [file] });
+  }
+}
+function handleUniversalFiles(fileList) {
+  const arr = Array.from(fileList || []);
+  arr.forEach(handleUniversalFile);
+}
+function handleUniversalDrop(e) {
+  e.preventDefault();
+  const zone = document.getElementById('assetsZone');
+  if (zone) zone.classList.remove('drag');
+  handleUniversalFiles(e.dataTransfer.files);
+}
 // ─────────────────────────────────────────────────────────────
 
 function renderSymSlots() {
