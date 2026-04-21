@@ -545,6 +545,14 @@ input[type=checkbox] { accent-color: var(--accent); }
   text-transform: uppercase;
 }
 .layer-row.active .layer-badge { color: var(--accent); }
+.layer-fx {
+  display: inline-flex; align-items: center; gap: 3px;
+  font-family: var(--font-mono); font-size: 10px;
+  color: var(--accent); flex-shrink: 0; line-height: 1;
+}
+.layer-fx.off { color: var(--text-dim); }
+.layer-fx-n { font-size: 9px; color: var(--accent); opacity: 0.85; }
+.layer-row.active .layer-fx { color: var(--accent); }
 .layer-arrows { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; }
 .layer-arrows button {
   background: none;
@@ -1116,6 +1124,20 @@ const fxIcons = {
   vignette:  '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>',
 };
 
+function getLayerFxCount(key) {
+  if (key === 'bg') return (fx.bg_ken?1:0) + (fx.bg_dim?1:0);
+  if (key === 'flash') return fx.flash_on?1:0;
+  if (key === 'particles') return fx.part_on?1:0;
+  if (key === 'vignette') return (fx.vig_on?1:0) + (fx.vig_pulse?1:0);
+  if (key.startsWith('sym_')) {
+    const idx = parseInt(key.split('_')[1]);
+    const sp = symParams[idx];
+    if (!sp) return 0;
+    return (sp.scale?1:0)+(sp.flash?1:0)+(sp.glow?1:0)+(sp.rotate?1:0)+(sp.loopFloat?1:0)+(sp.loopSpin?1:0)+(sp.shine?1:0);
+  }
+  return 0;
+}
+
 function getLayerMeta(key) {
   if (key === 'bg') return { name: 'Background', badge: 'BG', icon: fxIcons.bg, panel: 'bg' };
   if (key === 'flash') return { name: 'Flash overlay', badge: 'FX', icon: fxIcons.flash, panel: 'flash' };
@@ -1176,10 +1198,15 @@ function renderLayerList() {
     const clickAction = isSym
       ? 'setActiveSymIdx('+m.symIdx+');selectLayer(\'sym\')'
       : 'selectLayer(\''+m.panel+'\')';
+    const fxn = getLayerFxCount(key);
+    const fxBadge = fxn > 0
+      ? '<span class="layer-fx" title="'+fxn+' effect'+(fxn>1?'s':'')+' active">●<span class="layer-fx-n">'+fxn+'</span></span>'
+      : '<span class="layer-fx off" title="no effects">○</span>';
     html += '<div class="layer-row'+(isActive?' active':'')+'" id="lr_'+key+'_row" draggable="true" data-layer="'+key+'">' +
       '<span class="layer-grip" title="Drag to reorder">⠿</span>' +
       '<span class="icon">'+m.icon+'</span>' +
       '<div class="layer-name" onclick="'+clickAction+'">'+m.name+'</div>' +
+      fxBadge +
       '<div class="layer-badge">'+m.badge+'</div>' +
       '<div class="layer-arrows">' +
         '<button onclick="event.stopPropagation();moveLayer(\''+key+'\',-1)" title="Move up (front)">▲</button>' +
@@ -1199,6 +1226,7 @@ function moveLayer(key, dir) {
   layerOrder.splice(newIdx, 0, key);
   renderLayerList();
   rebuild();
+  if (typeof pushSnapshot === 'function') pushSnapshot();
 }
 
 // Drag & drop for layers
@@ -1235,6 +1263,7 @@ function initLayerDrag() {
         layerOrder.splice(toIdx, 0, dragKey);
         renderLayerList();
         rebuild();
+        if (typeof pushSnapshot === 'function') pushSnapshot();
       }
     });
   });
@@ -1438,6 +1467,8 @@ function tfx(key) {
   const tog = document.getElementById('tog_'+key);
   if (tog) tog.classList.toggle('on', fx[key]);
   rebuild();
+  renderLayerList();
+  pushSnapshot();
 }
 
 // Per-element fx toggle
@@ -1448,6 +1479,8 @@ function toggleSymFx(prop) {
   sp[prop] = !sp[prop];
   loadSymUI();
   rebuild();
+  renderLayerList();
+  pushSnapshot();
 }
 
 // Save current UI values into active sym params
@@ -1593,6 +1626,7 @@ function loadBg(input) {
       zone.classList.add('has-file');
       document.getElementById('bgLabel').innerHTML = '<img style="width:28px;height:28px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px" src="' + data + '"> ' + file.name + ' <small style="color:#4a7a4a;display:block;margin-top:2px">' + fmt + ' · ' + newSize + 'KB' + (isGif ? '' : ' (was ' + origSize + 'KB)') + '</small>';
       rebuild();
+      if (typeof pushSnapshot === 'function') pushSnapshot();
     };
     img.src = e.target.result;
   };
@@ -1635,6 +1669,7 @@ function loadSymFile(idx, input) {
       renderLayerList();
       setActiveSymIdx(idx);
       rebuild();
+      if (typeof pushSnapshot === 'function') pushSnapshot();
     };
     img.src = e.target.result;
   };
@@ -1662,6 +1697,7 @@ function deleteSym(idx, e) {
   renderSymSlots();
   renderLayerList();
   rebuild();
+  if (typeof pushSnapshot === 'function') pushSnapshot();
 }
 
 function setActiveSymIdx(idx) {
@@ -1786,6 +1822,7 @@ function handleFigmaSVGImport(file) {
     setActiveSymIdx(0);
     if (zone) zone.classList.add('has-file');
     rebuild();
+    if (typeof pushSnapshot === 'function') pushSnapshot();
   };
   r.readAsText(file);
 }
@@ -2299,11 +2336,123 @@ function exportPNG() {
   img.src = url;
 }
 
+// ============ UNDO / REDO ============
+const history = { stack: [], idx: -1, max: 60, suspend: false };
+
+function captureSnapshot() {
+  const snap = {
+    state: JSON.parse(JSON.stringify(state)),
+    fx: Object.assign({}, fx),
+    layerOrder: layerOrder.slice(),
+    symParams: JSON.parse(JSON.stringify(symParams)),
+    inputs: {},
+    toggles: {}
+  };
+  document.querySelectorAll('input[id], select[id]').forEach(el => {
+    snap.inputs[el.id] = el.type === 'checkbox' ? el.checked : el.value;
+  });
+  document.querySelectorAll('.tog[id]').forEach(el => {
+    snap.toggles[el.id] = el.classList.contains('on');
+  });
+  return snap;
+}
+
+function pushSnapshot() {
+  if (history.suspend) return;
+  const snap = captureSnapshot();
+  // Drop redo-tail if user diverged
+  if (history.idx < history.stack.length - 1) {
+    history.stack = history.stack.slice(0, history.idx + 1);
+  }
+  // Dedupe: skip if identical to last
+  const top = history.stack[history.stack.length - 1];
+  if (top && JSON.stringify(top) === JSON.stringify(snap)) return;
+  history.stack.push(snap);
+  if (history.stack.length > history.max) history.stack.shift();
+  history.idx = history.stack.length - 1;
+}
+
+function restoreSnapshot(snap) {
+  history.suspend = true;
+  try {
+    // Mutate state in place (const reference)
+    Object.keys(state).forEach(k => delete state[k]);
+    Object.assign(state, JSON.parse(JSON.stringify(snap.state)));
+    Object.assign(fx, snap.fx);
+    layerOrder.length = 0;
+    snap.layerOrder.forEach(k => layerOrder.push(k));
+    symParams.length = 0;
+    JSON.parse(JSON.stringify(snap.symParams)).forEach(sp => symParams.push(sp));
+
+    // Restore syms UI (slots) if count changed
+    if (typeof renderSymSlots === 'function') renderSymSlots();
+
+    // Restore inputs/selects
+    Object.entries(snap.inputs).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.type === 'checkbox') el.checked = val;
+      else el.value = val;
+      // fire input event to update value spans
+      el.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+    // Restore toggles
+    Object.entries(snap.toggles).forEach(([id, on]) => {
+      const el = document.getElementById(id);
+      if (el) el.classList.toggle('on', on);
+    });
+
+    // Restore active sym UI and layer list
+    if (typeof loadSymUI === 'function') loadSymUI();
+    renderLayerList();
+    selectLayer(document.querySelector('.fx-panel.active')?.id?.replace('panel_','') || 'bg');
+    rebuild();
+  } finally {
+    history.suspend = false;
+  }
+}
+
+function undo() {
+  if (history.idx > 0) {
+    history.idx--;
+    restoreSnapshot(history.stack[history.idx]);
+  }
+}
+function redo() {
+  if (history.idx < history.stack.length - 1) {
+    history.idx++;
+    restoreSnapshot(history.stack[history.idx]);
+  }
+}
+
+document.addEventListener('keydown', (e) => {
+  // Skip when typing in text inputs (but not sliders/colors)
+  const t = e.target;
+  const inTextField = t && (t.tagName === 'INPUT' && ['text','number','email','password','search'].indexOf(t.type) !== -1 || t.tagName === 'TEXTAREA');
+  if (inTextField) return;
+  const isZ = e.code === 'KeyZ' || e.key === 'z' || e.key === 'Z' || e.key === 'я' || e.key === 'Я';
+  const isY = e.code === 'KeyY' || e.key === 'y' || e.key === 'Y';
+  if ((e.metaKey || e.ctrlKey) && isZ && !e.shiftKey) {
+    e.preventDefault(); undo();
+  } else if ((e.metaKey || e.ctrlKey) && ((isZ && e.shiftKey) || isY)) {
+    e.preventDefault(); redo();
+  }
+});
+
+// Snapshot on any value change (debounced so slider drags collapse into one)
+let _snapTimer;
+document.addEventListener('change', () => {
+  clearTimeout(_snapTimer);
+  _snapTimer = setTimeout(pushSnapshot, 120);
+});
+
 // Init
 addSymSlot();
 renderLayerList();
 selectLayer('bg');
 initEditableVals();
+// Capture initial state
+setTimeout(pushSnapshot, 0);
 </script>
 </body>
 </html>
