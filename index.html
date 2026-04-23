@@ -551,6 +551,22 @@ input[type=checkbox] { accent-color: var(--accent); }
   color: var(--accent); flex-shrink: 0; line-height: 1;
 }
 .layer-fx.off { color: var(--text-dim); }
+.fx-row { padding: 5px var(--sp-3); }
+.fx-row .layer-name { font-size: var(--fs-sm); color: var(--text-muted); }
+.fx-row.enabled .layer-name { color: var(--text); }
+.fx-row.active .layer-name { color: var(--accent); }
+.fx-eye {
+  width: 16px; height: 16px; flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: transparent; border: 1px solid var(--border-strong);
+  border-radius: 50%; color: var(--text-dim);
+  font-family: var(--font-mono); font-size: 10px; line-height: 1;
+  cursor: pointer; padding: 0;
+  transition: all 0.12s;
+}
+.fx-row.enabled .fx-eye { color: var(--accent); border-color: var(--accent); background: var(--accent-soft); }
+.fx-row:hover .fx-eye { border-color: var(--border-strong); }
+.fx-row.enabled:hover .fx-eye { border-color: var(--accent-hover); }
 .layer-fx-n { font-size: 9px; color: var(--accent); opacity: 0.85; }
 .layer-row.active .layer-fx { color: var(--accent); }
 .layer-arrows { display: flex; flex-direction: column; gap: 1px; flex-shrink: 0; }
@@ -780,6 +796,11 @@ input[type=checkbox] { accent-color: var(--accent); }
     <div class="panel-title"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 17 12 22 22 17"/><polyline points="2 12 12 17 22 12"/></svg></span><span class="panel-code">E.1</span><span class="panel-sep">/</span>Elements</div>
     <div class="sym-slots" id="symSlots"></div>
     <div class="add-slot-btn" onclick="addSymSlot()" style="margin-top:6px"><span class="icon"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg></span> <span>Add element</span></div>
+  </div>
+
+  <div class="panel" id="fxPanelWrap" style="margin-bottom:10px">
+    <div class="panel-title" onclick="toggleFxPanel()" style="cursor:pointer;user-select:none"><span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5z"/><path d="M5 3l.75 2.25L8 6l-2.25.75L5 9l-.75-2.25L2 6l2.25-.75z"/></svg></span><span class="panel-code">FX.1</span><span class="panel-sep">/</span>Effects<small class="panel-hint" id="fxCaret">▾</small></div>
+    <div id="fxList"></div>
   </div>
 
   <div class="panel">
@@ -1173,12 +1194,16 @@ function syncSymLayers() {
 function renderLayerList() {
   syncSymLayers();
   const list = document.getElementById('layerList');
-  let html = '';
+  const FX_KEYS = new Set(['vignette','particles','flash']);
+  const FX_TOGGLE = { vignette: 'vig_on', particles: 'part_on', flash: 'flash_on' };
+  let layerHtml = '';
+  let fxHtml = '';
   for (let i = 0; i < layerOrder.length; i++) {
     const key = layerOrder[i];
     const m = getLayerMeta(key);
     const isActive = document.querySelector('#lr_'+CSS.escape(key)+'_row.active') !== null;
     const isSym = key.startsWith('sym_');
+    const isFx = FX_KEYS.has(key);
     const clickAction = isSym
       ? 'setActiveSymIdx('+m.symIdx+');selectLayer(\'sym\')'
       : 'selectLayer(\''+m.panel+'\')';
@@ -1186,20 +1211,43 @@ function renderLayerList() {
     const fxBadge = fxn > 0
       ? '<span class="layer-fx" title="'+fxn+' effect'+(fxn>1?'s':'')+' active">●<span class="layer-fx-n">'+fxn+'</span></span>'
       : '<span class="layer-fx off" title="no effects">○</span>';
-    html += '<div class="layer-row'+(isActive?' active':'')+'" id="lr_'+key+'_row" draggable="true" data-layer="'+key+'">' +
-      '<span class="layer-grip" title="Drag to reorder">⠿</span>' +
-      '<span class="icon">'+m.icon+'</span>' +
-      '<div class="layer-name" onclick="'+clickAction+'">'+m.name+'</div>' +
-      fxBadge +
-      '<div class="layer-badge">'+m.badge+'</div>' +
-      '<div class="layer-arrows">' +
-        '<button onclick="event.stopPropagation();moveLayer(\''+key+'\',-1)" title="Move up (front)">▲</button>' +
-        '<button onclick="event.stopPropagation();moveLayer(\''+key+'\',1)" title="Move down (back)">▼</button>' +
-      '</div>' +
-    '</div>';
+    if (isFx) {
+      const onKey = FX_TOGGLE[key];
+      const isOn = !!fx[onKey];
+      fxHtml += '<div class="layer-row fx-row'+(isActive?' active':'')+(isOn?' enabled':'')+'" id="lr_'+key+'_row" data-layer="'+key+'">' +
+        '<button class="fx-eye" onclick="event.stopPropagation();tfx(\''+onKey+'\')" title="'+(isOn?'Disable':'Enable')+'">'+(isOn?'●':'○')+'</button>' +
+        '<span class="icon">'+m.icon+'</span>' +
+        '<div class="layer-name" onclick="'+clickAction+'">'+m.name+'</div>' +
+        '<div class="layer-badge">'+m.badge+'</div>' +
+      '</div>';
+    } else {
+      layerHtml += '<div class="layer-row'+(isActive?' active':'')+'" id="lr_'+key+'_row" draggable="true" data-layer="'+key+'">' +
+        '<span class="layer-grip" title="Drag to reorder">⠿</span>' +
+        '<span class="icon">'+m.icon+'</span>' +
+        '<div class="layer-name" onclick="'+clickAction+'">'+m.name+'</div>' +
+        fxBadge +
+        '<div class="layer-badge">'+m.badge+'</div>' +
+        '<div class="layer-arrows">' +
+          '<button onclick="event.stopPropagation();moveLayer(\''+key+'\',-1)" title="Move up (front)">▲</button>' +
+          '<button onclick="event.stopPropagation();moveLayer(\''+key+'\',1)" title="Move down (back)">▼</button>' +
+        '</div>' +
+      '</div>';
+    }
   }
-  list.innerHTML = html;
+  list.innerHTML = layerHtml;
+  const fxList = document.getElementById('fxList');
+  if (fxList) fxList.innerHTML = fxHtml;
   initLayerDrag();
+}
+
+function toggleFxPanel() {
+  const wrap = document.getElementById('fxPanelWrap');
+  const list = document.getElementById('fxList');
+  const caret = document.getElementById('fxCaret');
+  if (!wrap || !list || !caret) return;
+  const collapsed = wrap.classList.toggle('collapsed');
+  list.style.display = collapsed ? 'none' : '';
+  caret.textContent = collapsed ? '▸' : '▾';
 }
 
 function moveLayer(key, dir) {
